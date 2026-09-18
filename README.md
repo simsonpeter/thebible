@@ -79,17 +79,13 @@ KJV file: `bible-data/kjv/kjv.json` (converted from the public-domain source in 
 - PWA install prompts depend on the browser.
 - Screen wake lock depends on browser support.
 
-## GitHub Pages
+## Hosted PWA
 
-A GitHub Actions workflow deploys the PWA to:
-
-https://simsonpeter.github.io/thebible/
-
-After the first push, enable **Settings → Pages → GitHub Actions** if the site does not go live automatically.
+Production URL: [https://thebible-five.vercel.app/](https://thebible-five.vercel.app/)
 
 ## Android APK (Bubblewrap)
 
-The Play-style wrapper lives in `android-twa/`. It opens the hosted PWA as a Trusted Web Activity, with WebView fallback.
+The Play-style wrapper lives in `android-twa/`. It opens the Vercel PWA as a Trusted Web Activity, with WebView fallback.
 
 ```bash
 npm run apk
@@ -97,7 +93,7 @@ npm run apk
 
 That command needs JDK 17 and an Android SDK. The signed APK is written to `android-twa/app-release-signed.apk`. Keep `android.keystore` private; it is gitignored.
 
-Host `assetlinks.json` at `https://simsonpeter.github.io/.well-known/assetlinks.json` (the GitHub Pages *origin* root, not `/thebible/`) so Android can verify the TWA and hide the browser chrome.
+Host Digital Asset Links at `https://thebible-five.vercel.app/.well-known/assetlinks.json` so Android can verify the TWA and hide the browser chrome.
 
 ## Future architecture
 

@@ -48,6 +48,10 @@
             android:resource="@string/assetStatements" />
 
         
+            <meta-data
+                android:name="web_manifest_url"
+                android:value="@string/webManifestUrl" />
+        
 
         <meta-data
             android:name="twa_generator"
@@ -146,8 +150,6 @@
                 <category android:name="android.intent.category.BROWSABLE"/>
                 <data android:scheme="https"
                     android:host="@string/hostName"
-                
-                    android:pathPrefix="/thebible/"
                 
                 />
             </intent-filter>

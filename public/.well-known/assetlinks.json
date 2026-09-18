@@ -1,0 +1,12 @@
+[
+  {
+    "relation": ["delegate_permission/common.handle_all_urls"],
+    "target": {
+      "namespace": "android_app",
+      "package_name": "app.njcbible.twa",
+      "sha256_cert_fingerprints": [
+        "89:65:6F:BF:CF:6C:A4:FD:00:3E:9E:5B:5F:DB:80:8D:25:64:A4:46:4D:32:18:AE:4B:B7:AA:A2:F2:B0:6F:A1"
+      ]
+    }
+  }
+]
