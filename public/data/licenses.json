@@ -1,0 +1,21 @@
+{
+  "app": {
+    "name": "NJC Bible App",
+    "version": "1.0.0",
+    "privacy": "Your Bible reading data is stored locally on this device. Version 1 does not collect personal data, and does not include analytics, advertising, or trackers."
+  },
+  "translations": [
+    {
+      "id": "kjv",
+      "name": "King James Version",
+      "license": "Public Domain",
+      "source": "thiagobodruk/bible en_kjv.json public-domain KJV text"
+    },
+    {
+      "id": "bsi-ov",
+      "name": "BSI OV",
+      "license": "Copyright Bible Society of India. Not bundled.",
+      "source": "Import a legally licensed dataset. Demo placeholders only until import."
+    }
+  ]
+}

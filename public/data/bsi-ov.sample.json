@@ -1,0 +1,28 @@
+{
+  "translation": {
+    "id": "bsi-ov",
+    "name": "BSI OV",
+    "language": "ta",
+    "abbreviation": "BSI OV",
+    "isDemo": true,
+    "license": "Copyright Bible Society of India. This sample contains placeholders only.",
+    "licenseDetails": "Do not treat placeholder strings as Scripture. Replace this file with a legally licensed BSI OV dataset.",
+    "source": "NJC Bible App sample/demo import format"
+  },
+  "books": [
+    {
+      "id": "john",
+      "name": "யோவான்",
+      "nameTamil": "யோவான்",
+      "chapters": [
+        {
+          "number": 3,
+          "verses": [
+            { "number": 16, "text": "[Licensed Bible text required]" },
+            { "number": 17, "text": "[Licensed Bible text required]" }
+          ]
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,42 @@
+{
+  "packageId": "app.njcbible.twa",
+  "host": "simsonpeter.github.io",
+  "name": "NJC Bible App",
+  "launcherName": "NJC Bible",
+  "display": "standalone",
+  "themeColor": "#12263A",
+  "themeColorDark": "#12263A",
+  "navigationColor": "#12263A",
+  "navigationColorDark": "#12263A",
+  "navigationDividerColor": "#12263A",
+  "navigationDividerColorDark": "#12263A",
+  "backgroundColor": "#F7F3EB",
+  "enableNotifications": false,
+  "startUrl": "/thebible/",
+  "iconUrl": "https://raw.githubusercontent.com/simsonpeter/thebible/main/public/icons/icon-512.png",
+  "maskableIconUrl": "https://raw.githubusercontent.com/simsonpeter/thebible/main/public/icons/icon-512.png",
+  "splashScreenFadeOutDuration": 300,
+  "signingKey": {
+    "path": "./android.keystore",
+    "alias": "android"
+  },
+  "appVersionName": "1.0.0",
+  "appVersionCode": 1,
+  "shortcuts": [],
+  "generatorApp": "bubblewrap-cli",
+  "webManifestUrl": "https://simsonpeter.github.io/thebible/manifest.webmanifest",
+  "fallbackType": "webview",
+  "features": {},
+  "alphaDependencies": {
+    "enabled": false
+  },
+  "enableSiteSettingsShortcut": true,
+  "isChromeOSOnly": false,
+  "isMetaQuest": false,
+  "fullScopeUrl": "https://simsonpeter.github.io/thebible/",
+  "minSdkVersion": 21,
+  "orientation": "default",
+  "fingerprints": [],
+  "additionalTrustedOrigins": [],
+  "retainedBundles": []
+}

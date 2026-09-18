@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="NJC Bible App">
+  <rect width="64" height="64" rx="14" fill="#12263a"/>
+  <path d="M32 10v8" stroke="#c6a35a" stroke-width="2.4" stroke-linecap="round"/>
+  <path d="M28 14h8" stroke="#c6a35a" stroke-width="2.4" stroke-linecap="round"/>
+  <path d="M16 26c6 0 12 3.2 16 8 4-4.8 10-8 16-8v24c-6 0-12 2.6-16 7.2C28 52.6 22 50 16 50V26z" fill="none" stroke="#c6a35a" stroke-width="2.4" stroke-linejoin="round"/>
+  <path d="M32 34v23" stroke="#c6a35a" stroke-width="1.6" stroke-linecap="round"/>
+</svg>

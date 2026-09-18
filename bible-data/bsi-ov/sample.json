@@ -1,0 +1,58 @@
+{
+  "translation": "BSI Tamil O.V. SAMPLE DATA ONLY",
+  "language": "ta",
+  "books": [
+    {
+      "id": "genesis",
+      "name": "ஆதியாகமம்",
+      "englishName": "Genesis",
+      "chapters": [
+        {
+          "chapter": 1,
+          "verses": [
+            {
+              "verse": 1,
+              "text": "SAMPLE DATA ONLY — not authorized BSI Tamil O.V. Scripture."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "john",
+      "name": "யோவான்",
+      "englishName": "John",
+      "chapters": [
+        {
+          "chapter": 3,
+          "verses": [
+            {
+              "verse": 16,
+              "text": "SAMPLE DATA ONLY — not authorized BSI Tamil O.V. Scripture."
+            },
+            {
+              "verse": 17,
+              "text": "SAMPLE DATA ONLY — not authorized BSI Tamil O.V. Scripture."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "psalms",
+      "name": "சங்கீதம்",
+      "englishName": "Psalms",
+      "chapters": [
+        {
+          "chapter": 23,
+          "verses": [
+            {
+              "verse": 1,
+              "text": "SAMPLE DATA ONLY — not authorized BSI Tamil O.V. Scripture."
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
