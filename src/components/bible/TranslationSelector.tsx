@@ -1,7 +1,7 @@
 import { cn } from "@/utils/misc";
 
 const OPTIONS = [
-  { id: "bsi-ov", label: "தமிழ் BSI O.V." },
+  { id: "bsi-ov", label: "தமிழ் O.V." },
   { id: "kjv", label: "English KJV" },
 ];
 

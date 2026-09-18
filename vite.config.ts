@@ -38,6 +38,7 @@ export default defineConfig({
         "icons/icon-512.png",
         "icons/apple-touch-icon.png",
         "bible-data/kjv/kjv.json",
+        "bible-data/bsi-ov/bsi-ov.json",
         "bible-data/bsi-ov/sample.json",
         "data/kjv-source.json",
         "data/bsi-ov.sample.json",
@@ -79,7 +80,7 @@ export default defineConfig({
       },
       workbox: {
         globPatterns: ["**/*.{js,css,html,ico,svg,png,woff,woff2,json,webmanifest}"],
-        maximumFileSizeToCacheInBytes: 12 * 1024 * 1024,
+        maximumFileSizeToCacheInBytes: 20 * 1024 * 1024,
         navigateFallback: "index.html",
         runtimeCaching: [
           {

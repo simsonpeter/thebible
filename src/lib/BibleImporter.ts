@@ -31,8 +31,26 @@ interface LoosePayload {
   books?: LooseBook[];
 }
 
+interface AruljohnBook {
+  book?: { english?: string; tamil?: string };
+  count?: string | number;
+  chapters?: Array<{
+    chapter?: string | number;
+    verses?: Array<{ verse?: string | number; text?: string }>;
+  }>;
+}
+
 function isSampleDataset(name: string): boolean {
   return /sample data only/i.test(name);
+}
+
+export function tamilOvTranslation(): ImportTranslation {
+  return {
+    id: "bsi-ov",
+    name: "Tamil Bible (Old Version)",
+    language: "ta",
+    abbreviation: "தமிழ் O.V.",
+  };
 }
 
 function asTranslation(raw: LoosePayload): ImportTranslation {
@@ -43,7 +61,7 @@ function asTranslation(raw: LoosePayload): ImportTranslation {
       id: tamil ? "bsi-ov" : "kjv",
       name,
       language: raw.language === "en" ? "en" : tamil ? "ta" : "ta",
-      abbreviation: tamil ? "BSI O.V." : "KJV",
+      abbreviation: tamil ? "தமிழ் O.V." : "KJV",
       isDemo: isSampleDataset(name),
     };
   }
@@ -54,9 +72,58 @@ function asTranslation(raw: LoosePayload): ImportTranslation {
     };
   }
   return {
+    ...tamilOvTranslation(),
     id: raw.id ?? "bsi-ov",
-    name: raw.name ?? "BSI Tamil O.V.",
+    name: raw.name ?? "Tamil Bible (Old Version)",
     language: raw.language ?? "ta",
+  };
+}
+
+function isAruljohnBook(value: unknown): value is AruljohnBook {
+  if (!value || typeof value !== "object") return false;
+  const obj = value as AruljohnBook;
+  const name = obj.book?.english?.trim() || obj.book?.tamil?.trim();
+  return Boolean(name && Array.isArray(obj.chapters));
+}
+
+function isAruljohnCatalog(value: unknown): boolean {
+  if (!Array.isArray(value) || value.length === 0) return false;
+  return value.every((item) => {
+    if (!item || typeof item !== "object") return false;
+    const row = item as AruljohnBook;
+    return Boolean(row.book && !Array.isArray(row.chapters));
+  });
+}
+
+function orderBooks(books: ImportBook[]): ImportBook[] {
+  const byId = new Map(books.map((book) => [book.id, book]));
+  const ordered = BOOK_CATALOG.map((item) => byId.get(item.id)).filter((book): book is ImportBook => Boolean(book));
+  for (const book of books) {
+    if (!ordered.some((item) => item.id === book.id)) ordered.push(book);
+  }
+  return ordered;
+}
+
+function importBookFromAruljohn(raw: AruljohnBook): ImportBook {
+  const english = raw.book?.english?.trim() ?? "";
+  const tamil = raw.book?.tamil?.trim() ?? "";
+  const catalog = getBookByAlias(english) ?? getBookByAlias(tamil);
+  if (!catalog) {
+    throw new Error(`Unknown book "${english || tamil}".`);
+  }
+  return {
+    id: catalog.id,
+    name: tamil || catalog.nameTamil,
+    nameTamil: tamil || catalog.nameTamil,
+    nameEnglish: english || catalog.nameEnglish,
+    testament: catalog.testament,
+    chapters: (raw.chapters ?? []).map((chapter) => ({
+      number: Number(chapter.chapter),
+      verses: (chapter.verses ?? []).map((verse) => ({
+        number: Number(verse.verse),
+        text: typeof verse.text === "string" ? verse.text : "",
+      })),
+    })),
   };
 }
 
@@ -68,8 +135,44 @@ function verseNumber(verse: { number?: number; verse?: number }): number {
   return Number(verse.number ?? verse.verse);
 }
 
+export function mergeBibleImports(payloads: BibleImportFile[]): BibleImportFile {
+  if (payloads.length === 0) {
+    throw new Error("No Bible files to import.");
+  }
+  const books = new Map<string, ImportBook>();
+  for (const payload of payloads) {
+    for (const book of payload.books) {
+      books.set(book.id, book);
+    }
+  }
+  return {
+    translation: (payloads.find((item) => item.books.length > 1) ?? payloads[0]).translation,
+    books: orderBooks([...books.values()]),
+  };
+}
+
 export function normalizeBiblePayload(raw: unknown): BibleImportFile {
+  if (isAruljohnCatalog(raw)) {
+    throw new Error(
+      "Books.json is a catalog only. Import the 66 book files (Genesis.json through Revelation.json).",
+    );
+  }
+  if (isAruljohnBook(raw)) {
+    return { translation: tamilOvTranslation(), books: [importBookFromAruljohn(raw)] };
+  }
+  if (Array.isArray(raw)) {
+    if (raw.every(isAruljohnBook)) {
+      return { translation: tamilOvTranslation(), books: orderBooks(raw.map(importBookFromAruljohn)) };
+    }
+    throw new Error("Invalid Bible file. Expected a books array or per-book Tamil JSON.");
+  }
   const data = (raw ?? {}) as LoosePayload;
+  if (Array.isArray(data.books) && data.books.length > 0 && isAruljohnBook(data.books[0])) {
+    return {
+      translation: asTranslation(data),
+      books: orderBooks((data.books as unknown as AruljohnBook[]).map(importBookFromAruljohn)),
+    };
+  }
   if (!Array.isArray(data.books)) {
     throw new Error("Invalid Bible file. Expected a books array.");
   }
@@ -230,12 +333,7 @@ export function parseTxtBible(text: string, fallback: ImportTranslation): BibleI
 
 export function parseBibleFile(filename: string, content: string): BibleImportFile {
   const lower = filename.toLowerCase();
-  const fallback: ImportTranslation = {
-    id: "bsi-ov",
-    name: "BSI Tamil O.V.",
-    language: "ta",
-    abbreviation: "BSI O.V.",
-  };
+  const fallback: ImportTranslation = tamilOvTranslation();
   if (lower.endsWith(".csv")) return parseCsvBible(content, fallback);
   if (lower.endsWith(".txt")) return parseTxtBible(content, fallback);
   try {

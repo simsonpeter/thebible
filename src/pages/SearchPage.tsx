@@ -128,7 +128,7 @@ export function SearchPage() {
         {searching ? <p className="text-sm text-muted">Searching locally…</p> : null}
         {!searching && query.length >= 2 && hits.length === 0 ? (
           <p className="text-sm text-muted">
-            No verses matched. Tamil search works after an authorized BSI O.V. import.
+            No verses matched. Tamil search uses the bundled Tamil O.V. text.
           </p>
         ) : null}
         {hits.map((hit) => (

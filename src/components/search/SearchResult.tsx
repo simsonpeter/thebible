@@ -16,7 +16,7 @@ export function SearchResult({
     <button type="button" className="w-full rounded-3xl bg-white/80 p-4 text-left dark:bg-white/5" onClick={onOpen}>
       <p className="text-sm font-semibold">
         {formatReference(hit.verse.bookId, hit.verse.chapter, hit.verse.number, language)}
-        <span className="ml-2 text-xs text-gold">{hit.verse.translationId === "kjv" ? "KJV" : "BSI O.V."}</span>
+        <span className="ml-2 text-xs text-gold">{hit.verse.translationId === "kjv" ? "KJV" : "தமிழ் O.V."}</span>
       </p>
       <p className={language === "ta" ? "tamil mt-2 text-sm" : "mt-2 text-sm"}>{highlightNodes(hit.snippet, query)}</p>
     </button>

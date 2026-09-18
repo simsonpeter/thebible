@@ -13,8 +13,8 @@ export function PrivacyPage() {
         </p>
         <p>
           Bible text is read from files you install locally. English KJV is bundled from a public-domain source. Tamil
-          BSI O.V. is imported only from an authorized dataset you provide. The app never uploads verse text, notes, or
-          bookmarks.
+          O.V. is bundled from the classic Tamil Old Version files packaged in aruljohn/Bible-tamil, and is not presented
+          as authorized BSI New Ortho. The app never uploads verse text, notes, or bookmarks.
         </p>
         <p>Version 1 does not require an account. Offline reading continues without internet access.</p>
         <p>You can export or delete local user data from Settings → Backup.</p>

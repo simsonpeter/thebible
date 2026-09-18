@@ -10,6 +10,7 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "icons": "node scripts/rasterize-icons.mjs",
+    "prepare:tamil": "node scripts/prepare-tamil-ov.mjs",
     "apk": "bubblewrap update --manifest android-twa && bubblewrap build --skipPwaValidation --manifest android-twa"
   },
   "dependencies": {

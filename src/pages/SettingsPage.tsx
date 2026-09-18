@@ -104,7 +104,7 @@ export function SettingsPage() {
       <SettingsSection title="Bible">
         <Row label="Default Bible">
           <Chip active={settings.defaultTranslation === "bsi-ov" } onClick={() => void update({ defaultTranslation: "bsi-ov" })}>
-            தமிழ் BSI O.V.
+            தமிழ் O.V.
           </Chip>
           <Chip active={settings.defaultTranslation === "kjv"} onClick={() => void update({ defaultTranslation: "kjv" })}>
             English KJV

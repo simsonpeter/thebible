@@ -67,7 +67,7 @@ export function HomePage() {
           className={`min-h-11 rounded-full px-3 text-sm ${settings.defaultTranslation === "bsi-ov" ? "bg-navy text-white" : "bg-paper-2 dark:bg-white/5"}`}
           onClick={() => void update({ defaultTranslation: "bsi-ov" })}
         >
-          தமிழ் BSI O.V.
+          தமிழ் O.V.
         </button>
         <button
           type="button"
@@ -84,8 +84,8 @@ export function HomePage() {
 
       {!bsiReady ? (
         <p className="mb-4 rounded-2xl bg-gold-soft/50 px-4 py-3 text-sm text-navy-deep">
-          BSI Tamil O.V. Bible data has not been installed. Import an authorized BSI Tamil O.V. dataset from Settings →
-          Bible Data.
+          Tamil Bible data has not been installed yet. It is bundled as Tamil O.V. and will load on first launch, or you
+          can import book JSON files from Settings → Bible Data.
         </p>
       ) : null}
 

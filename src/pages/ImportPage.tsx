@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { Page } from "@/components/layout/Page";
 import { Button } from "@/components/ui/Button";
 import { importBiblePayload, type ImportProgress } from "@/services/bibleImport";
-import { parseBibleFile } from "@/lib/BibleImporter";
+import { mergeBibleImports, parseBibleFile } from "@/lib/BibleImporter";
 import { validateBibleImport } from "@/services/bibleValidation";
 import type { BibleImportFile, ValidationResult } from "@/types/bible";
 import { useToast } from "@/hooks/useToast";
@@ -23,21 +23,37 @@ export function ImportPage() {
   const kjvInstalled = Boolean(kjv && kjv.verseCount > 0);
   const bsiInstalled = Boolean(bsi && !bsi.isDemo && bsi.verseCount > 0);
 
-  function onFile(file: File) {
+  function onFiles(files: File[]) {
     setFileError(null);
     setResult(null);
     setPayload(null);
-    setProgress({ stage: "Reading file...", percent: 8 });
-    void file
-      .text()
-      .then((text) => {
+    setProgress({ stage: files.length > 1 ? `Reading ${files.length} files...` : "Reading file...", percent: 8 });
+    void Promise.all(
+      files.map(async (file) => {
+        const text = await file.text();
+        try {
+          return parseBibleFile(file.name, text);
+        } catch (error) {
+          if (
+            files.length > 1 &&
+            error instanceof Error &&
+            /catalog only/i.test(error.message)
+          ) {
+            return null;
+          }
+          throw error;
+        }
+      }),
+    )
+      .then((parsed) => {
+        const payloads = parsed.filter((item): item is NonNullable<typeof item> => Boolean(item));
         setProgress({ stage: "Validating...", percent: 22 });
-        const parsed = parseBibleFile(file.name, text);
-        const check = validateBibleImport(parsed, {
+        const merged = mergeBibleImports(payloads);
+        const check = validateBibleImport(merged, {
           allowPartial: partial,
-          allowPlaceholders: Boolean(parsed.translation?.isDemo),
+          allowPlaceholders: Boolean(merged.translation?.isDemo),
         });
-        setPayload(parsed);
+        setPayload(merged);
         setResult(check);
         setProgress(null);
       })
@@ -60,8 +76,9 @@ export function ImportPage() {
   return (
     <Page title="Bible Data" subtitle="Import an authorized dataset. Nothing is scraped." back>
       <p className="mb-4 text-sm leading-relaxed text-muted">
-        English KJV is bundled from a public-domain source. Tamil BSI O.V. must be imported from a dataset you are
-        legally authorized to use. JSON is recommended; CSV and TXT are also accepted.
+        English KJV and Tamil O.V. are bundled. You can replace Tamil by importing a combined JSON file, or all 66
+        per-book files from aruljohn/Bible-tamil (Genesis.json through Revelation.json). Books.json is a catalog only.
+        CSV and TXT are also accepted.
       </p>
       <div className="mb-4 rounded-3xl bg-white/80 p-4 text-sm dark:bg-white/5">
         <p className="font-semibold">KJV</p>
@@ -71,12 +88,11 @@ export function ImportPage() {
             {kjv?.bookCount} books • {kjv?.verseCount.toLocaleString()} verses
           </p>
         ) : null}
-        <p className="mt-4 font-semibold">BSI Tamil O.V.</p>
+        <p className="mt-4 font-semibold">Tamil O.V.</p>
         <p className="mt-1">{bsiInstalled ? "Installed" : "Not Installed"}</p>
         {!bsiInstalled ? (
           <p className="mt-2 text-muted">
-            BSI Tamil O.V. Bible data has not been installed. Import an authorized BSI Tamil O.V. dataset from Settings
-            → Bible Data.
+            Tamil O.V. is bundled with the app. If it is missing here, re-open the app or import the 66 book JSON files.
           </p>
         ) : (
           <p className="mt-1 text-muted">
@@ -94,9 +110,10 @@ export function ImportPage() {
           type="file"
           accept=".json,.csv,.txt,application/json,text/csv,text/plain"
           className="hidden"
+          multiple
           onChange={(event) => {
-            const file = event.target.files?.[0];
-            if (file) onFile(file);
+            const selected = event.target.files ? [...event.target.files] : [];
+            if (selected.length) onFiles(selected);
           }}
         />
       </label>

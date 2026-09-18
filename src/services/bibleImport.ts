@@ -16,7 +16,7 @@ import { validateBibleImport } from "@/services/bibleValidation";
 import { seedReadingPlans } from "@/services/planService";
 import { publicUrl } from "@/utils/publicUrl";
 
-export const DATA_SCHEMA_VERSION = 3;
+export const DATA_SCHEMA_VERSION = 4;
 
 function isProbablyHtml(text: string): boolean {
   const start = text.trimStart().slice(0, 15).toLowerCase();
@@ -236,6 +236,17 @@ export async function importBiblePayload(
   };
 }
 
+async function ensureBundledTamil(onProgress?: (progress: ImportProgress) => void): Promise<void> {
+  const existing = await db.translations.get("bsi-ov");
+  if (existing && !existing.isDemo && existing.verseCount > 0) return;
+  const bundled = await fetchJsonIfPresent(publicUrl("bible-data/bsi-ov/bsi-ov.json"));
+  if (!bundled) return;
+  const check = validateBibleImport(bundled, { allowPartial: true });
+  if (!check.ok) return;
+  onProgress?.({ stage: "Installing Tamil Bible…", percent: 82 });
+  await replaceTranslation(bundled);
+}
+
 export async function removeDemoTranslation(translationId: string): Promise<void> {
   const translation = await db.translations.get(translationId);
   if (!translation?.isDemo) return;
@@ -254,6 +265,7 @@ export async function bootstrapLocalBible(
   const schema = await db.settings.get("dataSchemaVersion");
   if (existing && schema?.value === DATA_SCHEMA_VERSION) {
     await removeDemoTranslation("bsi-ov");
+    await ensureBundledTamil(onProgress);
     await seedReadingPlans();
     onProgress?.({ stage: "Offline Bible ready", percent: 100 });
     return;
@@ -274,13 +286,7 @@ export async function bootstrapLocalBible(
   await replaceTranslation(kjv);
 
   onProgress?.({ stage: "Indexing…", percent: 78 });
-  const bundledBsi = await fetchJsonIfPresent(publicUrl("bible-data/bsi-ov/bsi-ov.json"));
-  if (bundledBsi) {
-    const bsiCheck = validateBibleImport(bundledBsi, { allowPartial: true });
-    if (bsiCheck.ok) {
-      await replaceTranslation(bundledBsi);
-    }
-  }
+  await ensureBundledTamil(onProgress);
 
   onProgress?.({ stage: "Creating reading plans…", percent: 90 });
   await seedReadingPlans();

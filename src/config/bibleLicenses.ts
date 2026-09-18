@@ -16,12 +16,13 @@ export const bibleLicenses = {
   },
   bsiOv: {
     id: "bsi-ov",
-    name: "BSI Tamil O.V. (New Ortho)",
-    abbreviation: "BSI O.V.",
+    name: "Tamil Bible (Old Version)",
+    abbreviation: "தமிழ் O.V.",
     language: "ta" as const,
-    copyrightText: "",
-    permissionText: "",
-    publisherText: "",
+    copyrightText: "Classic Tamil Old Version. Not BSI Tamil O.V. New Ortho.",
+    permissionText:
+      "Packaged from the per-book JSON files in https://github.com/aruljohn/Bible-tamil. That repository's MIT license covers the packaging, not a named publisher grant for BSI New Ortho. The wording is classic Tamil Old Version (pre-New Ortho). The 1957 Bible Society of India and Ceylon Tamil Old Version is documented as public domain in India. NJC Bible App does not present this text as authorized BSI New Ortho.",
+    publisherText: "Source files: Arul John, Bible-tamil. Scripture wording: classic Tamil Old Version.",
   },
 };
 

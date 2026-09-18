@@ -1,5 +1,11 @@
 import { describe, expect, it } from "vitest";
-import { normalizeBiblePayload, parseBibleFile, parseCsvBible, parseTxtBible } from "@/lib/BibleImporter";
+import {
+  mergeBibleImports,
+  normalizeBiblePayload,
+  parseBibleFile,
+  parseCsvBible,
+  parseTxtBible,
+} from "@/lib/BibleImporter";
 import { validateBibleImport } from "@/lib/BibleValidator";
 import { normalizeForSearch, tokenize, verseId } from "@/utils/text";
 
@@ -108,5 +114,48 @@ describe("Tamil Unicode search tokens", () => {
     expect(normalizeForSearch("தேவன்")).toBe("தேவன்");
     expect(tokenize("தேவன் அன்பு இரட்சிப்பு", "ta")).toEqual(expect.arrayContaining(["தேவன்", "அன்பு", "இரட்சிப்பு"]));
     expect(verseId("bsi-ov", "genesis", 1, 1)).toBe("bsi-ov:genesis:1:1");
+  });
+});
+
+describe("aruljohn Tamil JSON", () => {
+  const johnBook = {
+    book: { english: "John", tamil: "யோவான்" },
+    count: "21",
+    chapters: [
+      {
+        chapter: "3",
+        verses: [{ verse: "16", text: "தேவன் இவ்வளவாய் உலகத்தில் அன்புகூர்ந்தார்." }],
+      },
+    ],
+  };
+
+  it("imports a single per-book file", () => {
+    const payload = parseBibleFile("John.json", JSON.stringify(johnBook));
+    expect(payload.translation.id).toBe("bsi-ov");
+    expect(payload.books[0]?.id).toBe("john");
+    expect(payload.books[0]?.chapters[0]?.verses[0]?.number).toBe(16);
+    expect(payload.books[0]?.chapters[0]?.verses[0]?.text).toContain("தேவன்");
+  });
+
+  it("rejects Books.json catalog files", () => {
+    expect(() =>
+      parseBibleFile(
+        "Books.json",
+        JSON.stringify([{ book: { english: "John", tamil: "யோவான்" } }]),
+      ),
+    ).toThrow(/catalog only/);
+  });
+
+  it("merges multiple per-book files", () => {
+    const genesis = parseBibleFile(
+      "Genesis.json",
+      JSON.stringify({
+        book: { english: "Genesis", tamil: "ஆதியாகமம்" },
+        chapters: [{ chapter: "1", verses: [{ verse: "1", text: "ஆதியிலே" }] }],
+      }),
+    );
+    const john = parseBibleFile("John.json", JSON.stringify(johnBook));
+    const merged = mergeBibleImports([genesis, john]);
+    expect(merged.books.map((book) => book.id)).toEqual(["genesis", "john"]);
   });
 });

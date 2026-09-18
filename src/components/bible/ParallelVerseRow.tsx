@@ -24,7 +24,7 @@ export function ParallelVerseRow({
   onLongPress: () => void;
 }) {
   const blocks = [
-    { key: "ta", label: "BSI OV Tamil", verse: tamil, language: "ta" as const },
+    { key: "ta", label: "Tamil O.V.", verse: tamil, language: "ta" as const },
     { key: "en", label: "KJV English", verse: english, language: "en" as const },
   ];
   if (order === "english-first") blocks.reverse();
@@ -58,7 +58,7 @@ export function ParallelVerseRow({
             >
               {block.verse?.text ??
                 (block.key === "ta"
-                  ? "BSI Tamil O.V. Bible data has not been installed."
+                  ? "Tamil Bible data has not been installed."
                   : "This verse is not available.")}
               {block.verse?.isPlaceholder ? ` • ${DEMO_BANNER}` : ""}
             </p>

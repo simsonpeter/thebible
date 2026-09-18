@@ -313,16 +313,17 @@ export function BibleReader() {
       <main className="mx-auto max-w-3xl px-4 py-6">
         {demo && translationId === "bsi-ov" ? (
           <p className="mb-4 rounded-2xl bg-gold-soft/60 px-4 py-3 text-sm text-navy-deep">
-            {DEMO_BANNER}. Licensed BSI OV text is not included. Placeholder verses are not Scripture.
+            {DEMO_BANNER}. Tamil Scripture is not included in this demo set. Placeholder verses are not Scripture.
           </p>
         ) : null}
         {missing || empty ? (
           <div className="rounded-3xl bg-white/80 p-6 dark:bg-white/5">
             {translationId === "bsi-ov" ? (
               <>
-                <p className="font-semibold">BSI Tamil O.V. Bible data has not been installed.</p>
+                <p className="font-semibold">Tamil Bible data has not been installed.</p>
                 <p className="mt-2 text-sm text-muted">
-                  Import an authorized BSI Tamil O.V. dataset from Settings → Bible Data.
+                  Tamil O.V. is bundled with the app. If it did not load, import the 66 book JSON files from Settings →
+                  Bible Data.
                 </p>
               </>
             ) : (

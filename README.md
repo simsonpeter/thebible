@@ -9,7 +9,7 @@ Offline-first Tamil and English Bible reader. Version 1 stores everything locall
 | ID | Name | Status |
 | --- | --- | --- |
 | `kjv` | King James Version | Public-domain text is bundled at `bible-data/kjv/kjv.json` and imported on first launch. It is not downloaded from the internet at runtime. |
-| `bsi-ov` | BSI Tamil O.V. (New Ortho) | **Not bundled.** Import an authorized dataset you legally obtained. Fill copyright/permission text in `src/config/bibleLicenses.ts`. |
+| `bsi-ov` | Tamil Bible (Old Version) | Bundled from the per-book JSON files in [aruljohn/Bible-tamil](https://github.com/aruljohn/Bible-tamil). Labeled as classic Tamil O.V., **not** authorized BSI New Ortho. |
 
 NJC Bible App never invents verses, never scrapes websites, and never presents sample or placeholder text as Scripture.
 
@@ -43,7 +43,7 @@ Use **Settings → Bible Data**. JSON, CSV, and TXT are accepted. JSON is recomm
 
 ```json
 {
-  "translation": "BSI Tamil O.V.",
+  "translation": "Tamil Bible (Old Version)",
   "language": "ta",
   "books": [
     {
@@ -67,14 +67,14 @@ Rules:
 - Full production imports must contain exactly 66 books.
 - Duplicate books/chapters/verses and empty verse text are rejected.
 - Scripture text is stored exactly as supplied.
-- A development-only sample lives at `bible-data/bsi-ov/sample.json` and is marked **SAMPLE DATA ONLY**. Do not treat it as BSI Scripture.
-- Do not place copyrighted BSI text in `bible-data/bsi-ov/bsi-ov.json` unless you are authorized to bundle it.
+- The bundled Tamil file is `bible-data/bsi-ov/bsi-ov.json` (classic Tamil O.V. from aruljohn/Bible-tamil).
+- A development-only sample lives at `bible-data/bsi-ov/sample.json` and is marked **SAMPLE DATA ONLY**.
+- Do not replace that bundled file with BSI Tamil O.V. New Ortho unless you are authorized to distribute it.
 
 KJV file: `bible-data/kjv/kjv.json` (converted from the public-domain source in `public/data/kjv-source.json`).
 
 ## Known limitations
 
-- Tamil BSI O.V. is unavailable until an authorized import. KJV reading, search, bookmarks, notes, plans, and daily verse still work offline.
 - Cloud sync, Google/email login, and online quiz leaderboards are architected but not implemented.
 - PWA install prompts depend on the browser.
 - Screen wake lock depends on browser support.

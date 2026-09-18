@@ -26,9 +26,10 @@ export const LICENSES = {
     name: bibleLicenses.bsiOv.name,
     abbreviation: bibleLicenses.bsiOv.abbreviation,
     language: bibleLicenses.bsiOv.language,
-    license: bibleLicenses.bsiOv.copyrightText || "Not bundled. Import an authorized dataset.",
+    license: bibleLicenses.bsiOv.copyrightText,
     licenseDetails: bsiNoticeFromConfig(),
-    source: "Not included. Provide an authorized JSON, CSV, or TXT import.",
+    source: bibleLicenses.bsiOv.publisherText,
+    year: 1957,
     copyrightHolder: bibleLicenses.bsiOv.publisherText || undefined,
   },
 };
