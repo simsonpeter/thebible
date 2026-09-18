@@ -49,10 +49,20 @@ body {
   color: #f5f1ea;
 }
 
+.tamil,
+.tamil-serif {
+  font-kerning: normal;
+  font-feature-settings: normal;
+  font-variant-ligatures: normal;
+  font-synthesis: none;
+  letter-spacing: 0;
+  word-break: keep-all;
+  overflow-wrap: break-word;
+  line-break: auto;
+}
+
 .tamil {
   font-family: var(--font-tamil);
-  font-feature-settings: "kern" 1;
-  line-break: auto;
 }
 
 .tamil-serif {
