@@ -24,7 +24,6 @@
   "appVersionCode": 1,
   "shortcuts": [],
   "generatorApp": "bubblewrap-cli",
-  "webManifestUrl": "https://simsonpeter.github.io/thebible/manifest.webmanifest",
   "fallbackType": "webview",
   "features": {},
   "alphaDependencies": {

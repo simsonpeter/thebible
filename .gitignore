@@ -22,6 +22,8 @@ android-twa/*.keystore
 android-twa/*.jks
 *.keystore
 *.jks
+*.apk
+*.idsig
 .bubblewrap-secrets/
 
 # Editor directories and files
