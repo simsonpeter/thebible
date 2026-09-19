@@ -74,7 +74,7 @@ describe("user data stores", () => {
     await seedReadingPlans();
     const plans = await listPlans();
     expect(plans.map((plan) => plan.id).sort()).toEqual(
-      ["bible-1-year", "gospels-30", "nt-90", "proverbs-31", "psalms-30"],
+      ["bible-1-year", "gospels-30", "njc-plan", "nt-90", "proverbs-31", "psalms-30"],
     );
     await togglePlanDay("proverbs-31", 1, true);
     const progress = await planProgress("proverbs-31");

@@ -64,7 +64,13 @@ export interface PlanDayRecord {
   planId: string;
   day: number;
   label: string;
-  readings: Array<{ bookId: string; chapter: number }>;
+  readings: Array<{
+    bookId: string;
+    chapter: number;
+    verseStart?: number;
+    verseEnd?: number;
+    slot?: "morning" | "evening";
+  }>;
   completed: boolean;
   completedAt?: string;
 }

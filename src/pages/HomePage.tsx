@@ -27,7 +27,7 @@ export function HomePage() {
   const { canInstall, install } = useInstallPrompt();
   const [pair, setPair] = useState<{ english?: VerseRecord; tamil?: VerseRecord }>({});
   const [recent, setRecent] = useState<ReadingHistoryRecord[]>([]);
-  const [planInfo, setPlanInfo] = useState({ name: "Reading Plan", day: 1, total: 365, id: "bible-1-year" });
+  const [planInfo, setPlanInfo] = useState({ name: "Reading Plan", day: 1, total: 365, id: "njc-plan" });
   const bookmarkCount = useLiveQuery(() => db.bookmarks.count(), []) ?? 0;
   const noteCount = useLiveQuery(() => db.notes.count(), []) ?? 0;
   const highlightCount = useLiveQuery(() => db.highlights.count(), []) ?? 0;
@@ -39,7 +39,7 @@ export function HomePage() {
     void listRecentHistory(5).then(setRecent);
     void (async () => {
       const plans = await listPlans();
-      const plan = plans.find((item) => item.id === "bible-1-year") ?? plans[0];
+      const plan = plans.find((item) => item.id === "njc-plan") ?? plans.find((item) => item.id === "bible-1-year") ?? plans[0];
       if (!plan) return;
       const progress = await planProgress(plan.id);
       setPlanInfo({ name: plan.name, day: progress.currentDay, total: progress.total, id: plan.id });

@@ -1,7 +1,6 @@
-import { PLAN_TEMPLATES, buildPlanDays } from "@/data/readingPlans";
+import { PLAN_TEMPLATES, buildPlanDays, labelPlanDay } from "@/data/readingPlans";
 import { db } from "@/db";
 import type { PlanDayRecord, ReadingPlanRecord } from "@/types/userData";
-import { formatReference } from "@/utils/reference";
 import { nowIso } from "@/utils/misc";
 
 export async function seedReadingPlans(): Promise<void> {
@@ -19,7 +18,7 @@ export async function seedReadingPlans(): Promise<void> {
         readings.map((dayReadings, index) => ({
           planId: plan.id,
           day: index + 1,
-          label: dayReadings.map((reading) => formatReference(reading.bookId, reading.chapter)).join("; "),
+          label: labelPlanDay(dayReadings),
           readings: dayReadings,
           completed: false,
         })),

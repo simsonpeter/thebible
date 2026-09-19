@@ -5,6 +5,7 @@ import { dailyIndex } from "@/services/dailyVerse";
 import { formatParallelShare, formatVerseShare } from "@/services/shareService";
 import { validateBibleImport } from "@/services/bibleValidation";
 import { BOOK_CATALOG, bookDisplayName } from "@/data/books";
+import { buildPlanDays, parseNjcReference } from "@/data/readingPlans";
 import type { BibleImportFile } from "@/types/bible";
 
 describe("verse IDs", () => {
@@ -21,6 +22,27 @@ describe("verse IDs", () => {
 
   it("synchronizes parallel rows by book, chapter, and verse", () => {
     expect(syncKey("john", 3, 16)).toBe("john:3:16");
+  });
+});
+
+describe("NJC reading plan", () => {
+  it("parses morning and evening abbreviations", () => {
+    expect(parseNjcReference("Mat.1", "morning")).toEqual([{ bookId: "matthew", chapter: 1, slot: "morning" }]);
+    expect(parseNjcReference("Gen.1-3", "evening").map((item) => item.chapter)).toEqual([1, 2, 3]);
+    expect(parseNjcReference("Mat.5:1-26", "morning")[0]).toMatchObject({
+      bookId: "matthew",
+      chapter: 5,
+      verseStart: 1,
+      verseEnd: 26,
+    });
+  });
+
+  it("builds 365 complete NJC days", () => {
+    const days = buildPlanDays("njc-plan");
+    expect(days).toHaveLength(365);
+    expect(days[0]?.[0]?.bookId).toBe("matthew");
+    expect(days[364]?.some((item) => item.bookId === "malachi")).toBe(true);
+    expect(days.every((day) => day.length > 0)).toBe(true);
   });
 });
 

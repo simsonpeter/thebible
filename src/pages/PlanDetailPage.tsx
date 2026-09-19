@@ -56,16 +56,28 @@ export function PlanDetailPage() {
                 }}
               />
             </div>
-            <button
-              type="button"
-              className="mt-2 min-h-11 text-sm font-semibold"
-              onClick={() => {
-                const first = day.readings[0];
-                if (first) navigate(`/bible/${first.bookId}/${first.chapter}`);
-              }}
-            >
-              Open reading
-            </button>
+            <div className="mt-2 flex flex-wrap gap-3">
+              {(day.readings.some((reading) => reading.slot)
+                ? (["morning", "evening"] as const).filter((slot) => day.readings.some((reading) => reading.slot === slot))
+                : [undefined]
+              ).map((slot) => {
+                const first = slot
+                  ? day.readings.find((reading) => reading.slot === slot)
+                  : day.readings[0];
+                if (!first) return null;
+                const query = first.verseStart ? `?verse=${first.verseStart}` : "";
+                return (
+                  <button
+                    key={slot ?? "reading"}
+                    type="button"
+                    className="min-h-11 text-sm font-semibold capitalize"
+                    onClick={() => navigate(`/bible/${first.bookId}/${first.chapter}${query}`)}
+                  >
+                    {slot ? `Open ${slot}` : "Open reading"}
+                  </button>
+                );
+              })}
+            </div>
           </article>
         ))}
       </div>
