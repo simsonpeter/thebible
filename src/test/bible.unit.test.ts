@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 import { parseReference } from "@/utils/referenceParser";
 import { parseVerseId, syncKey, verseId } from "@/utils/text";
 import { dailyIndex } from "@/services/dailyVerse";
-import { formatParallelShare, formatVerseShare } from "@/services/shareService";
+import { formatParallelRangeShare, formatParallelShare, formatVerseShare, formatVersesShare } from "@/services/shareService";
 import { validateBibleImport } from "@/services/bibleValidation";
 import { BOOK_CATALOG, bookDisplayName } from "@/data/books";
 import { buildPlanDays, parseNjcReference } from "@/data/readingPlans";
@@ -77,6 +77,28 @@ describe("share format", () => {
   it("formats single and parallel text", () => {
     expect(formatVerseShare({ bookId: "john", chapter: 3, verse: 16, text: "For God so loved the world...", language: "en" })).toContain("John 3:16");
     expect(formatParallelShare({ bookId: "john", chapter: 3, verse: 16, tamil: "[Licensed Bible text required]", english: "For God so loved the world..." })).toContain("யோவான் 3:16");
+    const range = formatVersesShare({
+      bookId: "john",
+      chapter: 3,
+      language: "en",
+      verses: [
+        { number: 16, text: "For God so loved the world." },
+        { number: 17, text: "For God sent not his Son." },
+      ],
+    });
+    expect(range).toContain("John 3:16-17");
+    expect(range).toContain("16 For God so loved the world.");
+    expect(range).toContain("17 For God sent not his Son.");
+    expect(
+      formatParallelRangeShare({
+        bookId: "john",
+        chapter: 3,
+        rows: [
+          { number: 16, tamil: "தேவன் இவ்வளவாய்", english: "For God so loved the world." },
+          { number: 17, tamil: "தேவன் தம்முடைய குமாரனை", english: "For God sent not his Son." },
+        ],
+      }),
+    ).toContain("யோவான் 3:16-17");
   });
 });
 

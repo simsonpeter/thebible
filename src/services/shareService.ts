@@ -32,6 +32,55 @@ export function formatParallelShare(options: {
   return lines.join("\n").trim();
 }
 
+export function formatVersesShare(options: {
+  bookId: string;
+  chapter: number;
+  verses: Array<{ number: number; text: string }>;
+  language: "en" | "ta";
+}): string {
+  if (options.verses.length === 1) {
+    return formatVerseShare({
+      bookId: options.bookId,
+      chapter: options.chapter,
+      verse: options.verses[0].number,
+      text: options.verses[0].text,
+      language: options.language,
+    });
+  }
+  const start = options.verses[0]?.number ?? 1;
+  const end = options.verses[options.verses.length - 1]?.number ?? start;
+  const body = options.verses.map((verse) => `${verse.number} ${verse.text}`).join("\n");
+  return `${formatRange(options.bookId, options.chapter, start, end, options.language)}\n${body}\n\nNJC Bible App`;
+}
+
+export function formatParallelRangeShare(options: {
+  bookId: string;
+  chapter: number;
+  rows: Array<{ number: number; tamil?: string; english?: string }>;
+}): string {
+  if (options.rows.length === 1) {
+    return formatParallelShare({
+      bookId: options.bookId,
+      chapter: options.chapter,
+      verse: options.rows[0].number,
+      tamil: options.rows[0].tamil,
+      english: options.rows[0].english,
+    });
+  }
+  const start = options.rows[0]?.number ?? 1;
+  const end = options.rows[options.rows.length - 1]?.number ?? start;
+  const lines = [formatRange(options.bookId, options.chapter, start, end, "ta")];
+  for (const row of options.rows) {
+    if (row.tamil) lines.push(`${row.number} ${row.tamil}`);
+  }
+  lines.push("", formatRange(options.bookId, options.chapter, start, end, "en"));
+  for (const row of options.rows) {
+    if (row.english) lines.push(`${row.number} ${row.english}`);
+  }
+  lines.push("", "NJC Bible App");
+  return lines.join("\n").trim();
+}
+
 export async function shareOrCopy(title: string, text: string): Promise<"shared" | "copied" | "aborted"> {
   if (typeof navigator !== "undefined" && navigator.share) {
     try {

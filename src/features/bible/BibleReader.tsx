@@ -21,14 +21,14 @@ import { addBookmark } from "@/services/bookmarkService";
 import { getHighlightMap, removeHighlight, setHighlight } from "@/services/highlightService";
 import { recordChapterOpen } from "@/services/historyService";
 import { addNote } from "@/services/noteService";
-import { addSermonPassage, createSermon, readActiveSermonId, rememberActiveSermon } from "@/services/sermonService";
+import { addSermonPassageRange, createSermon, readActiveSermonId, rememberActiveSermon } from "@/services/sermonService";
 import { markChapterRead } from "@/services/progressService";
-import { copyText, formatParallelShare, formatVerseShare, shareOrCopy } from "@/services/shareService";
+import { copyText, formatParallelRangeShare, formatVersesShare, shareOrCopy } from "@/services/shareService";
 import type { VerseRecord } from "@/types/bible";
 import type { HighlightColor } from "@/types/userData";
 import { DEFAULT_BOOKMARK_CATEGORIES } from "@/types/userData";
 import { FONT_PRESETS, type FontPreset } from "@/types/settings";
-import { formatReference } from "@/utils/reference";
+import { formatRange } from "@/utils/reference";
 import { verseId } from "@/utils/text";
 import { cn, formatSundayLabel } from "@/utils/misc";
 
@@ -49,7 +49,9 @@ export function BibleReader() {
   const [verses, setVerses] = useState<VerseRecord[]>([]);
   const [pairs, setPairs] = useState<Array<{ number: number; tamil?: VerseRecord; english?: VerseRecord }>>([]);
   const [highlights, setHighlights] = useState<Map<string, { color: HighlightColor }>>(new Map());
-  const [selected, setSelected] = useState<number | null>(verseParam || null);
+  const [selection, setSelection] = useState<{ start: number; end: number } | null>(
+    verseParam ? { start: verseParam, end: verseParam } : null,
+  );
   const [menuOpen, setMenuOpen] = useState(false);
   const [goOpen, setGoOpen] = useState(false);
   const [noteOpen, setNoteOpen] = useState(false);
@@ -128,7 +130,7 @@ export function BibleReader() {
     if (!verseParam) return;
     const node = document.getElementById(`v-${verseParam}`);
     node?.scrollIntoView({ behavior: "smooth", block: "center" });
-    setSelected(verseParam);
+    setSelection({ start: verseParam, end: verseParam });
   }, [verseParam, verses, pairs]);
 
   useEffect(() => {
@@ -146,14 +148,39 @@ export function BibleReader() {
     return () => window.removeEventListener("keydown", onKey);
   }, [bookId, chapter, navigate, searchParams, translationId, mode]);
 
+  const range = useMemo(() => {
+    if (!selection) return null;
+    return {
+      start: Math.min(selection.start, selection.end),
+      end: Math.max(selection.start, selection.end),
+    };
+  }, [selection]);
+
+  const selectedCount = range ? range.end - range.start + 1 : 0;
+
+  const chapterVerseNumbers = useMemo(
+    () => (mode === "parallel" ? pairs.map((item) => item.number) : verses.map((item) => item.number)),
+    [mode, pairs, verses],
+  );
+
   const selectedVerse = useMemo(() => {
-    if (!selected) return undefined;
+    if (!range) return undefined;
     if (mode === "parallel") {
-      const pair = pairs.find((item) => item.number === selected);
+      const pair = pairs.find((item) => item.number === range.start);
       return settings.parallelOrder === "english-first" ? pair?.english ?? pair?.tamil : pair?.tamil ?? pair?.english;
     }
-    return verses.find((item) => item.number === selected);
-  }, [selected, mode, pairs, verses, settings.parallelOrder]);
+    return verses.find((item) => item.number === range.start);
+  }, [range, mode, pairs, verses, settings.parallelOrder]);
+
+  const selectedSingleVerses = useMemo(() => {
+    if (!range) return [];
+    return verses.filter((item) => item.number >= range.start && item.number <= range.end && !item.isPlaceholder);
+  }, [range, verses]);
+
+  const selectedPairs = useMemo(() => {
+    if (!range) return [];
+    return pairs.filter((item) => item.number >= range.start && item.number <= range.end);
+  }, [range, pairs]);
 
   function goChapter(delta: number) {
     const next = adjacentChapter(bookId, chapter, delta);
@@ -172,10 +199,12 @@ export function BibleReader() {
   }
 
   function changeBook(nextBook: string) {
+    setSelection(null);
     navigate(buildPath(nextBook, 1));
   }
 
   function changeChapter(nextChapter: number) {
+    setSelection(null);
     navigate(buildPath(bookId, nextChapter));
   }
 
@@ -200,50 +229,88 @@ export function BibleReader() {
     void update({ fontPreset: preset, ...FONT_PRESETS[preset] });
   }
 
+  function selectVerse(number: number) {
+    setSelection((current) => {
+      if (!current) return { start: number, end: number };
+      if (current.start === current.end && current.start === number) return current;
+      return { start: current.start, end: number };
+    });
+  }
+
+  function selectChapter() {
+    const first = chapterVerseNumbers[0];
+    const last = chapterVerseNumbers[chapterVerseNumbers.length - 1];
+    if (first == null || last == null) return;
+    setSelection({ start: first, end: last });
+  }
+
   function openMenu(number: number) {
-    setSelected(number);
+    setSelection((current) => {
+      if (!current) return { start: number, end: number };
+      return { start: current.start, end: number };
+    });
     setMenuOpen(true);
   }
 
-  async function onHighlight(color: HighlightColor) {
-    if (!selected) return;
-    const id = verseId(translationId, bookId, chapter, selected);
-    await setHighlight({
-      verseId: id,
-      translationId,
+  function selectionReference() {
+    if (!range) return "";
+    return formatRange(bookId, chapter, range.start, range.end, language);
+  }
+
+  function selectedShareText() {
+    if (!range) return "";
+    if (mode === "parallel") {
+      return formatParallelRangeShare({
+        bookId,
+        chapter,
+        rows: selectedPairs.map((pair) => ({
+          number: pair.number,
+          tamil: pair.tamil?.isPlaceholder ? undefined : pair.tamil?.text,
+          english: pair.english?.text,
+        })),
+      });
+    }
+    return formatVersesShare({
       bookId,
       chapter,
-      verseNumber: selected,
-      color,
+      verses: selectedSingleVerses.map((verse) => ({ number: verse.number, text: verse.text })),
+      language,
     });
-    setHighlights(new Map(highlights).set(id, { color }));
+  }
+
+  async function onHighlight(color: HighlightColor) {
+    if (!range) return;
+    const next = new Map(highlights);
+    for (let number = range.start; number <= range.end; number += 1) {
+      const id = verseId(translationId, bookId, chapter, number);
+      await setHighlight({
+        verseId: id,
+        translationId,
+        bookId,
+        chapter,
+        verseNumber: number,
+        color,
+      });
+      next.set(id, { color });
+    }
+    setHighlights(next);
     setMenuOpen(false);
-    push("Verse highlighted", "success");
+    push(selectedCount > 1 ? "Verses highlighted" : "Verse highlighted", "success");
   }
 
   async function handleAction(action: string) {
-    if (!selected) return;
-    const pair = pairs.find((item) => item.number === selected);
+    if (!range) return;
     const verse = selectedVerse;
     const text = verse?.text ?? "";
-    const language = verse?.translationId === "bsi-ov" ? "ta" : "en";
-    const shareText =
-      mode === "parallel"
-        ? formatParallelShare({
-            bookId,
-            chapter,
-            verse: selected,
-            tamil: pair?.tamil?.isPlaceholder ? undefined : pair?.tamil?.text,
-            english: pair?.english?.text,
-          })
-        : formatVerseShare({ bookId, chapter, verse: selected, text, language });
+    const verseLanguage = verse?.translationId === "bsi-ov" ? "ta" : "en";
+    const shareText = selectedShareText();
     if (action === "copy") {
       await copyText(shareText);
-      push("Copied", "success");
+      push(selectedCount > 1 ? "Verses copied" : "Copied", "success");
     }
     if (action === "share") {
       const result = await shareOrCopy("NJC Bible App", shareText);
-      if (result === "copied") push("Copied", "success");
+      if (result === "copied") push(selectedCount > 1 ? "Verses copied" : "Copied", "success");
     }
     if (action === "bookmark") setBookmarkOpen(true);
     if (action === "note") setNoteOpen(true);
@@ -252,34 +319,40 @@ export function BibleReader() {
     if (action === "search") navigate(`/search?q=${encodeURIComponent(text.slice(0, 40))}`);
     if (action === "image") {
       navigate("/verse-image", {
-        state: { bookId, chapter, verse: selected, text, language, translationId },
+        state: { bookId, chapter, verse: range.start, text, language: verseLanguage, translationId },
       });
     }
     setMenuOpen(false);
   }
 
-  function versesForSermon(): VerseRecord[] {
-    if (!selected) return [];
+  function versesForSermon(): VerseRecord[][] {
+    if (!range) return [];
     if (mode === "parallel") {
-      const pair = pairs.find((item) => item.number === selected);
-      return [pair?.tamil, pair?.english].filter((item): item is VerseRecord => Boolean(item && !item.isPlaceholder));
+      const tamil = selectedPairs
+        .map((pair) => pair.tamil)
+        .filter((item): item is VerseRecord => Boolean(item && !item.isPlaceholder));
+      const english = selectedPairs
+        .map((pair) => pair.english)
+        .filter((item): item is VerseRecord => Boolean(item && !item.isPlaceholder));
+      return [tamil, english].filter((group) => group.length > 0);
     }
-    return selectedVerse ? [selectedVerse] : [];
+    return selectedSingleVerses.length ? [selectedSingleVerses] : [];
   }
 
   async function addVersesToSermon(sermonId: number) {
-    const versesToAdd = versesForSermon();
-    if (!versesToAdd.length) {
+    const groups = versesForSermon();
+    const total = groups.reduce((sum, group) => sum + group.length, 0);
+    if (!total) {
       push("Select a verse first", "error");
       return;
     }
-    for (const verse of versesToAdd) {
-      await addSermonPassage(sermonId, verse);
+    for (const group of groups) {
+      await addSermonPassageRange(sermonId, group);
     }
     rememberActiveSermon(sermonId);
     setSermonOpen(false);
     setNewSermonTitle("");
-    push(versesToAdd.length > 1 ? "Verses added to sermon" : "Verse added to sermon", "success");
+    push(total > 1 ? `${total} verses added to sermon` : "Verse added to sermon", "success");
   }
 
   const language = translationId === "bsi-ov" ? "ta" : "en";
@@ -290,7 +363,7 @@ export function BibleReader() {
       : pairs.every((pair) => !pair.english && !pair.tamil));
 
   return (
-    <div className={cn("safe-bottom min-h-screen", settings.distractionFree && "bg-paper dark:bg-[#090c10]")}>
+    <div className={cn("safe-bottom min-h-screen", range && "pb-44", settings.distractionFree && "bg-paper dark:bg-[#090c10]")}>
       {settings.distractionFree ? (
         <div className="sticky top-0 z-20 flex justify-end p-3">
           <Button variant="ghost" onClick={() => void update({ distractionFree: false })}>
@@ -374,6 +447,16 @@ export function BibleReader() {
           </span>
           <span className="text-4xl font-semibold text-navy dark:text-gold">{chapter}</span>
         </h2>
+        <div className="mb-6 flex flex-wrap justify-center gap-2">
+          <Button variant="secondary" onClick={selectChapter} disabled={!chapterVerseNumbers.length}>
+            Select chapter
+          </Button>
+          {range ? (
+            <Button variant="ghost" onClick={() => setSelection(null)}>
+              Clear selection
+            </Button>
+          ) : null}
+        </div>
 
         {mode === "single"
           ? verses.map((verse) => (
@@ -383,10 +466,10 @@ export function BibleReader() {
                 showNumber={settings.showVerseNumbers}
                 language={language}
                 highlight={highlights.get(verse.id)?.color}
-                selected={selected === verse.number}
+                selected={Boolean(range && verse.number >= range.start && verse.number <= range.end)}
                 continuous={!settings.verseByVerse}
                 serif={language === "ta" ? settings.tamilFont === "serif" : settings.englishFont === "serif"}
-                onActivate={() => setSelected(verse.number)}
+                onActivate={() => selectVerse(verse.number)}
                 onLongPress={() => openMenu(verse.number)}
               />
             ))
@@ -399,8 +482,8 @@ export function BibleReader() {
                 order={settings.parallelOrder}
                 layout={layout}
                 showNumber={settings.showVerseNumbers}
-                selected={selected === pair.number}
-                onActivate={() => setSelected(pair.number)}
+                selected={Boolean(range && pair.number >= range.start && pair.number <= range.end)}
+                onActivate={() => selectVerse(pair.number)}
                 onLongPress={() => openMenu(pair.number)}
               />
             ))}
@@ -417,9 +500,36 @@ export function BibleReader() {
         </div>
       ) : null}
 
+      {range ? (
+        <div className="fixed inset-x-0 z-30 mx-auto max-w-3xl px-3 md:bottom-4 bottom-[calc(3.5rem+env(safe-area-inset-bottom))]">
+          <div className="rounded-3xl border border-navy/10 bg-paper/95 p-3 shadow-lg backdrop-blur dark:border-white/10 dark:bg-[#0c1016]/95">
+            <p className={cn("mb-2 text-sm font-semibold", language === "ta" && "tamil")}>
+              {selectionReference()}
+              <span className="ml-2 font-normal text-muted">
+                {selectedCount} verse{selectedCount === 1 ? "" : "s"}
+              </span>
+            </p>
+            <div className="flex flex-wrap gap-2">
+              <Button variant="secondary" onClick={() => void handleAction("copy")}>
+                Copy
+              </Button>
+              <Button variant="secondary" onClick={() => void handleAction("share")}>
+                Share
+              </Button>
+              <Button variant="gold" onClick={() => void handleAction("sermon")}>
+                Add to sermon
+              </Button>
+              <Button variant="ghost" onClick={() => setMenuOpen(true)}>
+                More
+              </Button>
+            </div>
+          </div>
+        </div>
+      ) : null}
+
       <VerseContextMenu
         open={menuOpen}
-        reference={formatReference(bookId, chapter, selected ?? 1, language)}
+        reference={range ? selectionReference() : ""}
         onClose={() => setMenuOpen(false)}
         onAction={(action) => void handleAction(action)}
         onHighlight={(color) => void onHighlight(color)}
@@ -434,13 +544,13 @@ export function BibleReader() {
         <Button
           className="mt-3 w-full"
           onClick={() => {
-            if (!selected || !noteText.trim()) return;
+            if (!range || !noteText.trim()) return;
             void addNote({
               translationId,
               bookId,
               chapter,
-              verseNumber: selected,
-              verseId: verseId(translationId, bookId, chapter, selected),
+              verseNumber: range.start,
+              verseId: verseId(translationId, bookId, chapter, range.start),
               text: noteText.trim(),
             }).then(() => {
               setNoteOpen(false);
@@ -476,13 +586,13 @@ export function BibleReader() {
         <Button
           className="mt-4 w-full"
           onClick={() => {
-            if (!selected) return;
+            if (!range) return;
             void addBookmark({
               translationId,
               bookId,
               chapter,
-              verseStart: selected,
-              verseEnd: selected,
+              verseStart: range.start,
+              verseEnd: range.end,
               title: bookmarkTitle,
               category: bookmarkCategory || bookmarkTitle || "Favorites",
             }).then(() => {
@@ -493,12 +603,21 @@ export function BibleReader() {
         >
           Save bookmark
         </Button>
-        {selected ? (
+        {range ? (
           <Button
             variant="ghost"
             className="mt-2 w-full"
             onClick={() => {
-              void removeHighlight(verseId(translationId, bookId, chapter, selected));
+              for (let number = range.start; number <= range.end; number += 1) {
+                void removeHighlight(verseId(translationId, bookId, chapter, number));
+              }
+              setHighlights((current) => {
+                const next = new Map(current);
+                for (let number = range.start; number <= range.end; number += 1) {
+                  next.delete(verseId(translationId, bookId, chapter, number));
+                }
+                return next;
+              });
             }}
           >
             Remove highlight if set
@@ -507,9 +626,7 @@ export function BibleReader() {
       </Modal>
       <Modal open={sermonOpen} title="Add to sermon" onClose={() => setSermonOpen(false)}>
         <p className="mb-3 text-sm text-muted">
-          {selected
-            ? formatReference(bookId, chapter, selected, language)
-            : "Select a verse first"}
+          {range ? selectionReference() : "Select a verse first"}
         </p>
         <div className="grid gap-2">
           {sermons.map((sermon) => (
@@ -539,7 +656,7 @@ export function BibleReader() {
             void createSermon({ title: newSermonTitle.trim() || undefined }).then((id) => addVersesToSermon(id));
           }}
         >
-          Create sermon and add verse
+          Create sermon and add verses
         </Button>
       </Modal>
     </div>

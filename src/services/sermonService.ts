@@ -73,6 +73,38 @@ export async function addSermonPassage(
   return id;
 }
 
+export async function addSermonPassageRange(
+  sermonId: number,
+  verses: Array<Pick<VerseRecord, "translationId" | "bookId" | "chapter" | "number" | "id" | "text">>,
+): Promise<number> {
+  const sorted = [...verses].sort((left, right) => left.number - right.number);
+  if (!sorted.length) throw new Error("No verses to add.");
+  if (sorted.length === 1) return addSermonPassage(sermonId, sorted[0]);
+  const first = sorted[0];
+  const last = sorted[sorted.length - 1];
+  const rangeId = `${first.translationId}:${first.bookId}:${first.chapter}:${first.number}-${last.number}`;
+  const existing = await db.sermonPassages.where("sermonId").equals(sermonId).toArray();
+  const duplicate = existing.find((row) => row.verseId === rangeId);
+  if (duplicate?.id) return duplicate.id;
+  const order = existing.reduce((max, row) => Math.max(max, row.order), -1) + 1;
+  const id = await db.sermonPassages.add({
+    sermonId,
+    order,
+    translationId: first.translationId,
+    bookId: first.bookId,
+    chapter: first.chapter,
+    verseStart: first.number,
+    verseEnd: last.number,
+    verseId: rangeId,
+    text: sorted.map((verse) => `${verse.number} ${verse.text}`).join("\n"),
+    note: "",
+    createdAt: nowIso(),
+  });
+  await db.sermons.update(sermonId, { updatedAt: nowIso() });
+  if (typeof id !== "number") throw new Error("Could not add verses to sermon.");
+  return id;
+}
+
 export async function updateSermonPassageNote(id: number, note: string): Promise<void> {
   const row = await db.sermonPassages.get(id);
   await db.sermonPassages.update(id, { note });

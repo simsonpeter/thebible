@@ -3,6 +3,7 @@ import { db } from "@/db";
 import { exportUserData, importUserData, resetUserData } from "@/services/backupService";
 import {
   addSermonPassage,
+  addSermonPassageRange,
   createSermon,
   formatSermonDocument,
   listSermonPassages,
@@ -77,5 +78,33 @@ describe("sermon notebooks", () => {
     const restored = await listSermons();
     expect(restored[0]?.title).toBe("Restore me");
     expect(await listSermonPassages(restored[0]!.id!)).toHaveLength(1);
+  });
+
+  it("stores a selected verse range as one sermon passage", async () => {
+    const id = await createSermon({ title: "John 3", sundayDate: "2026-09-20" });
+    await addSermonPassageRange(id, [
+      {
+        id: "kjv:john:3:16",
+        translationId: "kjv",
+        bookId: "john",
+        chapter: 3,
+        number: 16,
+        text: "For God so loved the world.",
+      },
+      {
+        id: "kjv:john:3:17",
+        translationId: "kjv",
+        bookId: "john",
+        chapter: 3,
+        number: 17,
+        text: "For God sent not his Son.",
+      },
+    ]);
+    const passages = await listSermonPassages(id);
+    expect(passages).toHaveLength(1);
+    expect(passages[0]?.verseStart).toBe(16);
+    expect(passages[0]?.verseEnd).toBe(17);
+    expect(passages[0]?.text).toContain("16 For God so loved the world.");
+    expect(formatSermonDocument((await listSermons())[0]!, passages)).toContain("John 3:16-17");
   });
 });
