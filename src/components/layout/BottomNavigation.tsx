@@ -5,8 +5,8 @@ const items = [
   { to: "/", label: "Home", icon: HomeIcon },
   { to: "/bible", label: "Bible", icon: BibleIcon },
   { to: "/search", label: "Search", icon: SearchIcon },
-  { to: "/bookmarks", label: "Bookmarks", icon: SavedIcon },
-  { to: "/settings", label: "Settings", icon: MoreIcon },
+  { to: "/sermons", label: "Sermons", icon: SermonIcon },
+  { to: "/more", label: "More", icon: MoreIcon },
 ];
 
 export function BottomNavigation() {
@@ -61,10 +61,11 @@ function SearchIcon() {
     </svg>
   );
 }
-function SavedIcon() {
+function SermonIcon() {
   return (
     <svg width="22" height="22" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-      <path d="M7 4h10a1 1 0 0 1 1 1v16l-6-3.5L6 21V5a1 1 0 0 1 1-1Z" stroke="currentColor" strokeWidth="1.7" />
+      <path d="M6 4h9a2 2 0 0 1 2 2v14H8a2 2 0 0 0-2 2V4Z" stroke="currentColor" strokeWidth="1.7" />
+      <path d="M9 8h6M9 12h6M9 16h4" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" />
     </svg>
   );
 }

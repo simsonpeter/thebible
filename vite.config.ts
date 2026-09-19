@@ -82,6 +82,9 @@ export default defineConfig({
         globPatterns: ["**/*.{js,css,html,ico,svg,png,woff,woff2,json,webmanifest}"],
         maximumFileSizeToCacheInBytes: 20 * 1024 * 1024,
         navigateFallback: "index.html",
+        cleanupOutdatedCaches: true,
+        skipWaiting: true,
+        clientsClaim: true,
         runtimeCaching: [
           {
             urlPattern: /\/(data|bible-data)\/.*\.json$/,

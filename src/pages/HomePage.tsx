@@ -109,6 +109,14 @@ export function HomePage() {
         </Button>
       </Card>
 
+      <Card className="mb-4" onClick={() => navigate("/sermons")}>
+        <p className="text-xs tracking-[0.25em] text-gold uppercase">Sunday sermon</p>
+        <h2 className="mt-2 font-semibold">Prepare this week&apos;s notes</h2>
+        <p className="mt-1 text-sm text-muted">
+          {sermonCount ? `${sermonCount} notebook${sermonCount === 1 ? "" : "s"} on this phone` : "Collect verses, write the outline, then share to Google Drive."}
+        </p>
+      </Card>
+
       <Card className="mb-4">
         <p className="text-xs tracking-[0.25em] text-gold uppercase">Today's Verse</p>
         {verse ? (
