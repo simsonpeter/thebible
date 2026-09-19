@@ -7,25 +7,18 @@ import { Card } from "@/components/ui/Card";
 import { OfflineBadge } from "@/components/ui/OfflineBadge";
 import { ModeToggle } from "@/components/bible/TranslationSelector";
 import { useSettings } from "@/hooks/useSettings";
-import { useToast } from "@/hooks/useToast";
 import { useInstallPrompt } from "@/hooks/useInstallPrompt";
-import { getDailyVersePair } from "@/services/dailyVerse";
 import { listRecentHistory } from "@/services/historyService";
-import { addBookmark } from "@/services/bookmarkService";
 import { listPlans, planProgress } from "@/services/planService";
-import { copyText, formatVerseShare, shareOrCopy } from "@/services/shareService";
 import { formatReference } from "@/utils/reference";
 import { cn } from "@/utils/misc";
-import type { VerseRecord } from "@/types/bible";
 import type { ReadingHistoryRecord } from "@/types/userData";
 import { db } from "@/db";
 
 export function HomePage() {
   const navigate = useNavigate();
   const { settings, update } = useSettings();
-  const { push } = useToast();
   const { canInstall, install } = useInstallPrompt();
-  const [pair, setPair] = useState<{ english?: VerseRecord; tamil?: VerseRecord }>({});
   const [recent, setRecent] = useState<ReadingHistoryRecord[]>([]);
   const [planInfo, setPlanInfo] = useState({ name: "Reading Plan", day: 1, total: 365, id: "njc-plan" });
   const bookmarkCount = useLiveQuery(() => db.bookmarks.count(), []) ?? 0;
@@ -33,10 +26,8 @@ export function HomePage() {
   const sermonCount = useLiveQuery(() => db.sermons.count(), []) ?? 0;
   const highlightCount = useLiveQuery(() => db.highlights.count(), []) ?? 0;
   const bsi = useLiveQuery(() => db.translations.get("bsi-ov"));
-  const verse = pair.english;
 
   useEffect(() => {
-    void getDailyVersePair(settings.dailyVerseSalt).then(setPair);
     void listRecentHistory(5).then(setRecent);
     void (async () => {
       const plans = await listPlans();
@@ -45,7 +36,7 @@ export function HomePage() {
       const progress = await planProgress(plan.id);
       setPlanInfo({ name: plan.name, day: progress.currentDay, total: progress.total, id: plan.id });
     })();
-  }, [settings.dailyVerseSalt]);
+  }, []);
 
   const continueBook = recent[0]?.bookId ?? settings.lastBookId;
   const continueChapter = recent[0]?.chapter ?? settings.lastChapter;
@@ -115,99 +106,6 @@ export function HomePage() {
         <p className="mt-1 text-sm text-muted">
           {sermonCount ? `${sermonCount} notebook${sermonCount === 1 ? "" : "s"} on this phone` : "Collect verses, write the outline, then share to Google Drive."}
         </p>
-      </Card>
-
-      <Card className="mb-4">
-        <p className="text-xs tracking-[0.25em] text-gold uppercase">Today's Verse</p>
-        {verse ? (
-          <>
-            {pair.tamil && !pair.tamil.isPlaceholder ? (
-              <div className="mt-3">
-                <p className="text-xs font-semibold text-muted uppercase">தமிழ்</p>
-                <p className="tamil mt-1 text-lg leading-relaxed">{pair.tamil.text}</p>
-              </div>
-            ) : null}
-            <div className="mt-3">
-              <p className="text-xs font-semibold text-muted uppercase">English</p>
-              <p className="english-serif mt-1 text-lg leading-relaxed">{verse.text}</p>
-            </div>
-            <p className="mt-3 text-sm font-semibold">
-              {formatReference(verse.bookId, verse.chapter, verse.number)}
-            </p>
-          </>
-        ) : (
-          <p className="mt-2">Bible data is not installed yet.</p>
-        )}
-        {verse ? (
-          <div className="mt-4 flex flex-wrap gap-2">
-            <Button
-              variant="secondary"
-              onClick={() =>
-                void shareOrCopy(
-                  "NJC Bible App",
-                  formatVerseShare({
-                    bookId: verse.bookId,
-                    chapter: verse.chapter,
-                    verse: verse.number,
-                    text: verse.text,
-                    language: "en",
-                  }),
-                )
-              }
-            >
-              Share
-            </Button>
-            <Button
-              variant="secondary"
-              onClick={() => {
-                void addBookmark({
-                  translationId: verse.translationId,
-                  bookId: verse.bookId,
-                  chapter: verse.chapter,
-                  verseStart: verse.number,
-                  verseEnd: verse.number,
-                  title: "Favorites",
-                  category: "Favorites",
-                }).then(() => push("Bookmarked", "success"));
-              }}
-            >
-              Bookmark
-            </Button>
-            <Button
-              variant="ghost"
-              onClick={() =>
-                void copyText(
-                  formatVerseShare({
-                    bookId: verse.bookId,
-                    chapter: verse.chapter,
-                    verse: verse.number,
-                    text: verse.text,
-                    language: "en",
-                  }),
-                ).then(() => push("Copied", "success"))
-              }
-            >
-              Copy
-            </Button>
-            <Button
-              variant="ghost"
-              onClick={() =>
-                navigate("/verse-image", {
-                  state: {
-                    bookId: verse.bookId,
-                    chapter: verse.chapter,
-                    verse: verse.number,
-                    text: verse.text,
-                    language: "en",
-                    translationId: verse.translationId,
-                  },
-                })
-              }
-            >
-              Image
-            </Button>
-          </div>
-        ) : null}
       </Card>
 
       <div className="mb-4 grid grid-cols-2 gap-3">
