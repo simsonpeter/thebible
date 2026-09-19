@@ -7,6 +7,7 @@ const actions = [
   { id: "share", label: "Share" },
   { id: "bookmark", label: "Bookmark" },
   { id: "note", label: "Add Note" },
+  { id: "sermon", label: "Add to sermon" },
   { id: "compare", label: "Compare" },
   { id: "search", label: "Search" },
   { id: "image", label: "Verse Image" },

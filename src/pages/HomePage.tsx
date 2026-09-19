@@ -30,6 +30,7 @@ export function HomePage() {
   const [planInfo, setPlanInfo] = useState({ name: "Reading Plan", day: 1, total: 365, id: "njc-plan" });
   const bookmarkCount = useLiveQuery(() => db.bookmarks.count(), []) ?? 0;
   const noteCount = useLiveQuery(() => db.notes.count(), []) ?? 0;
+  const sermonCount = useLiveQuery(() => db.sermons.count(), []) ?? 0;
   const highlightCount = useLiveQuery(() => db.highlights.count(), []) ?? 0;
   const bsi = useLiveQuery(() => db.translations.get("bsi-ov"));
   const verse = pair.english;
@@ -208,6 +209,7 @@ export function HomePage() {
           { label: `BOOKMARKS (${bookmarkCount})`, to: "/bookmarks" },
           { label: `HIGHLIGHTS (${highlightCount})`, to: "/highlights" },
           { label: `NOTES (${noteCount})`, to: "/notes" },
+          { label: `SERMONS (${sermonCount})`, to: "/sermons" },
           { label: "READING PLANS", to: "/reading-plans" },
         ].map((item) => (
           <Card key={item.to} onClick={() => navigate(item.to)}>

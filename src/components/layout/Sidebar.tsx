@@ -9,6 +9,7 @@ const links = [
   { to: "/bookmarks", label: "Bookmarks" },
   { to: "/highlights", label: "Highlights" },
   { to: "/notes", label: "Notes" },
+  { to: "/sermons", label: "Sermons" },
   { to: "/reading-plans", label: "Plans" },
   { to: "/progress", label: "Progress" },
   { to: "/settings", label: "Settings" },

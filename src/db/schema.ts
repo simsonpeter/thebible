@@ -13,6 +13,8 @@ import type {
   ReadingHistoryRecord,
   ReadingPlanRecord,
   ReadingProgressRecord,
+  SermonPassageRecord,
+  SermonRecord,
 } from "@/types/userData";
 
 export interface SettingsRow {
@@ -59,6 +61,8 @@ export class NJCBibleDB extends Dexie {
   bookmarks!: EntityTable<BookmarkRecord, "id">;
   highlights!: EntityTable<HighlightRecord, "verseId">;
   notes!: EntityTable<NoteRecord, "id">;
+  sermons!: EntityTable<SermonRecord, "id">;
+  sermonPassages!: EntityTable<SermonPassageRecord, "id">;
   readingHistory!: EntityTable<ReadingHistoryRecord, "id">;
   readingPlans!: EntityTable<ReadingPlanRecord, "id">;
   planDays!: EntityTable<PlanDayRecord, "day">;
@@ -91,6 +95,10 @@ export class NJCBibleDB extends Dexie {
       quizProgress: "id",
       quizResults: "++id, completedAt",
       achievements: "id, unlockedAt",
+    });
+    this.version(2).stores({
+      sermons: "++id, sundayDate, updatedAt, title",
+      sermonPassages: "++id, sermonId, order, verseId",
     });
   }
 }

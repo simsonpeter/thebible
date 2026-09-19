@@ -39,6 +39,30 @@ export interface NoteRecord {
   updatedAt: string;
 }
 
+export interface SermonRecord {
+  id?: number;
+  title: string;
+  sundayDate: string;
+  body: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface SermonPassageRecord {
+  id?: number;
+  sermonId: number;
+  order: number;
+  translationId: string;
+  bookId: string;
+  chapter: number;
+  verseStart: number;
+  verseEnd: number;
+  verseId: string;
+  text: string;
+  note: string;
+  createdAt: string;
+}
+
 export interface ReadingHistoryRecord {
   id?: number;
   translationId: string;
@@ -86,5 +110,7 @@ export interface UserBackupV1 {
   readingProgress: ReadingProgressRecord[];
   planDays: PlanDayRecord[];
   readingPlans?: ReadingPlanRecord[];
+  sermons?: SermonRecord[];
+  sermonPassages?: SermonPassageRecord[];
   settings: unknown;
 }

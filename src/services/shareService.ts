@@ -48,3 +48,20 @@ export async function shareOrCopy(title: string, text: string): Promise<"shared"
 export async function copyText(text: string): Promise<void> {
   await navigator.clipboard.writeText(text);
 }
+
+export async function shareTextFile(
+  filename: string,
+  text: string,
+  title: string,
+): Promise<"shared" | "copied" | "aborted"> {
+  const file = new File([text], filename, { type: "text/plain" });
+  if (typeof navigator !== "undefined" && navigator.canShare?.({ files: [file] })) {
+    try {
+      await navigator.share({ files: [file], title, text });
+      return "shared";
+    } catch (error) {
+      if (error instanceof Error && error.name === "AbortError") return "aborted";
+    }
+  }
+  return shareOrCopy(title, text);
+}

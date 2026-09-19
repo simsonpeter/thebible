@@ -5,17 +5,29 @@ import { nowIso } from "@/utils/misc";
 import { seedReadingPlans } from "@/services/planService";
 
 export async function exportUserData(): Promise<UserBackupV1> {
-  const [bookmarks, highlights, notes, readingHistory, readingProgress, planDays, readingPlans, settingsRow] =
-    await Promise.all([
-      db.bookmarks.toArray(),
-      db.highlights.toArray(),
-      db.notes.toArray(),
-      db.readingHistory.toArray(),
-      db.readingProgress.toArray(),
-      db.planDays.toArray(),
-      db.readingPlans.toArray(),
-      db.settings.get("app"),
-    ]);
+  const [
+    bookmarks,
+    highlights,
+    notes,
+    readingHistory,
+    readingProgress,
+    planDays,
+    readingPlans,
+    sermons,
+    sermonPassages,
+    settingsRow,
+  ] = await Promise.all([
+    db.bookmarks.toArray(),
+    db.highlights.toArray(),
+    db.notes.toArray(),
+    db.readingHistory.toArray(),
+    db.readingProgress.toArray(),
+    db.planDays.toArray(),
+    db.readingPlans.toArray(),
+    db.sermons.toArray(),
+    db.sermonPassages.toArray(),
+    db.settings.get("app"),
+  ]);
 
   return {
     version: 1,
@@ -28,6 +40,8 @@ export async function exportUserData(): Promise<UserBackupV1> {
     readingProgress,
     planDays,
     readingPlans,
+    sermons,
+    sermonPassages,
     settings: settingsRow?.value ?? DEFAULT_SETTINGS,
   };
 }
@@ -46,6 +60,8 @@ export async function importUserData(payload: UserBackupV1): Promise<void> {
       db.readingProgress,
       db.planDays,
       db.readingPlans,
+      db.sermons,
+      db.sermonPassages,
       db.settings,
     ],
     async () => {
@@ -55,10 +71,14 @@ export async function importUserData(payload: UserBackupV1): Promise<void> {
       await db.readingHistory.clear();
       await db.readingProgress.clear();
       await db.planDays.clear();
+      await db.sermons.clear();
+      await db.sermonPassages.clear();
       if (payload.readingPlans?.length) {
         await db.readingPlans.clear();
         await db.readingPlans.bulkPut(payload.readingPlans);
       }
+      if (payload.sermons?.length) await db.sermons.bulkPut(payload.sermons);
+      if (payload.sermonPassages?.length) await db.sermonPassages.bulkPut(payload.sermonPassages);
       if (payload.bookmarks.length) {
         await db.bookmarks.bulkAdd(payload.bookmarks.map((row) => {
           const copy = { ...row };
@@ -99,6 +119,8 @@ export async function resetUserData(): Promise<void> {
       db.readingProgress,
       db.planDays,
       db.readingPlans,
+      db.sermons,
+      db.sermonPassages,
       db.settings,
     ],
     async () => {
@@ -109,24 +131,40 @@ export async function resetUserData(): Promise<void> {
       await db.readingProgress.clear();
       await db.planDays.clear();
       await db.readingPlans.clear();
+      await db.sermons.clear();
+      await db.sermonPassages.clear();
       await db.settings.delete("app");
     },
   );
   await seedReadingPlans();
 }
 
-export async function storageSummary(): Promise<{ translations: number; verses: number; bookmarks: number; notes: number }> {
-  const [translations, verses, bookmarks, notes] = await Promise.all([
+export async function storageSummary(): Promise<{
+  translations: number;
+  verses: number;
+  bookmarks: number;
+  notes: number;
+  sermons: number;
+}> {
+  const [translations, verses, bookmarks, notes, sermons] = await Promise.all([
     db.translations.count(),
     db.verses.count(),
     db.bookmarks.count(),
     db.notes.count(),
+    db.sermons.count(),
   ]);
-  return { translations, verses, bookmarks, notes };
+  return { translations, verses, bookmarks, notes, sermons };
 }
 
 export function downloadJson(filename: string, data: unknown): void {
-  const blob = new Blob([JSON.stringify(data, null, 2)], { type: "application/json" });
+  downloadBlob(filename, new Blob([JSON.stringify(data, null, 2)], { type: "application/json" }));
+}
+
+export function downloadText(filename: string, text: string): void {
+  downloadBlob(filename, new Blob([text], { type: "text/plain;charset=utf-8" }));
+}
+
+function downloadBlob(filename: string, blob: Blob): void {
   const url = URL.createObjectURL(blob);
   const anchor = document.createElement("a");
   anchor.href = url;

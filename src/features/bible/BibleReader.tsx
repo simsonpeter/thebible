@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate, useParams, useSearchParams } from "react-router-dom";
+import { useLiveQuery } from "dexie-react-hooks";
 import { getBookById } from "@/data/books";
 import { DEMO_BANNER } from "@/data/licenses";
 import { BookSelector } from "@/components/bible/BookSelector";
@@ -11,6 +12,7 @@ import { VerseContextMenu } from "@/components/bible/VerseContextMenu";
 import { VerseRow } from "@/components/bible/VerseRow";
 import { Button } from "@/components/ui/Button";
 import { Modal } from "@/components/ui/Modal";
+import { db } from "@/db";
 import { useSettings } from "@/hooks/useSettings";
 import { useToast } from "@/hooks/useToast";
 import { useWakeLock } from "@/hooks/useWakeLock";
@@ -19,6 +21,7 @@ import { addBookmark } from "@/services/bookmarkService";
 import { getHighlightMap, removeHighlight, setHighlight } from "@/services/highlightService";
 import { recordChapterOpen } from "@/services/historyService";
 import { addNote } from "@/services/noteService";
+import { addSermonPassage, createSermon, readActiveSermonId, rememberActiveSermon } from "@/services/sermonService";
 import { markChapterRead } from "@/services/progressService";
 import { copyText, formatParallelShare, formatVerseShare, shareOrCopy } from "@/services/shareService";
 import type { VerseRecord } from "@/types/bible";
@@ -27,7 +30,7 @@ import { DEFAULT_BOOKMARK_CATEGORIES } from "@/types/userData";
 import { FONT_PRESETS, type FontPreset } from "@/types/settings";
 import { formatReference } from "@/utils/reference";
 import { verseId } from "@/utils/text";
-import { cn } from "@/utils/misc";
+import { cn, formatSundayLabel } from "@/utils/misc";
 
 const FONT_ORDER: FontPreset[] = ["small", "medium", "large", "xl"];
 
@@ -54,6 +57,9 @@ export function BibleReader() {
   const [bookmarkOpen, setBookmarkOpen] = useState(false);
   const [bookmarkTitle, setBookmarkTitle] = useState("Favorites");
   const [bookmarkCategory, setBookmarkCategory] = useState("Favorites");
+  const [sermonOpen, setSermonOpen] = useState(false);
+  const [newSermonTitle, setNewSermonTitle] = useState("");
+  const sermons = useLiveQuery(() => db.sermons.orderBy("updatedAt").reverse().toArray(), []) ?? [];
   const [missing, setMissing] = useState(false);
   const [demo, setDemo] = useState(false);
   const [loaded, setLoaded] = useState(false);
@@ -241,6 +247,7 @@ export function BibleReader() {
     }
     if (action === "bookmark") setBookmarkOpen(true);
     if (action === "note") setNoteOpen(true);
+    if (action === "sermon") setSermonOpen(true);
     if (action === "compare") changeMode("parallel");
     if (action === "search") navigate(`/search?q=${encodeURIComponent(text.slice(0, 40))}`);
     if (action === "image") {
@@ -249,6 +256,30 @@ export function BibleReader() {
       });
     }
     setMenuOpen(false);
+  }
+
+  function versesForSermon(): VerseRecord[] {
+    if (!selected) return [];
+    if (mode === "parallel") {
+      const pair = pairs.find((item) => item.number === selected);
+      return [pair?.tamil, pair?.english].filter((item): item is VerseRecord => Boolean(item && !item.isPlaceholder));
+    }
+    return selectedVerse ? [selectedVerse] : [];
+  }
+
+  async function addVersesToSermon(sermonId: number) {
+    const versesToAdd = versesForSermon();
+    if (!versesToAdd.length) {
+      push("Select a verse first", "error");
+      return;
+    }
+    for (const verse of versesToAdd) {
+      await addSermonPassage(sermonId, verse);
+    }
+    rememberActiveSermon(sermonId);
+    setSermonOpen(false);
+    setNewSermonTitle("");
+    push(versesToAdd.length > 1 ? "Verses added to sermon" : "Verse added to sermon", "success");
   }
 
   const language = translationId === "bsi-ov" ? "ta" : "en";
@@ -473,6 +504,43 @@ export function BibleReader() {
             Remove highlight if set
           </Button>
         ) : null}
+      </Modal>
+      <Modal open={sermonOpen} title="Add to sermon" onClose={() => setSermonOpen(false)}>
+        <p className="mb-3 text-sm text-muted">
+          {selected
+            ? formatReference(bookId, chapter, selected, language)
+            : "Select a verse first"}
+        </p>
+        <div className="grid gap-2">
+          {sermons.map((sermon) => (
+            <button
+              key={sermon.id}
+              type="button"
+              className="min-h-12 rounded-2xl bg-paper-2 px-3 text-left text-sm dark:bg-white/5"
+              onClick={() => sermon.id && void addVersesToSermon(sermon.id)}
+            >
+              <span className="font-semibold">{sermon.title}</span>
+              <span className="mt-1 block text-xs text-muted">{formatSundayLabel(sermon.sundayDate)}</span>
+              {readActiveSermonId() === sermon.id ? (
+                <span className="mt-1 block text-xs font-semibold text-gold">Currently collecting</span>
+              ) : null}
+            </button>
+          ))}
+        </div>
+        <input
+          className="mt-4 min-h-12 w-full rounded-2xl border border-navy/10 px-3 dark:border-white/10 dark:bg-white/5"
+          placeholder="New Sunday sermon title"
+          value={newSermonTitle}
+          onChange={(event) => setNewSermonTitle(event.target.value)}
+        />
+        <Button
+          className="mt-3 w-full"
+          onClick={() => {
+            void createSermon({ title: newSermonTitle.trim() || undefined }).then((id) => addVersesToSermon(id));
+          }}
+        >
+          Create sermon and add verse
+        </Button>
       </Modal>
     </div>
   );

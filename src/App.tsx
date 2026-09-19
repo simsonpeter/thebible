@@ -7,6 +7,8 @@ import { SavedPage } from "@/pages/SavedPage";
 import { BookmarksPage } from "@/pages/BookmarksPage";
 import { HighlightsPage } from "@/pages/HighlightsPage";
 import { NotesPage } from "@/pages/NotesPage";
+import { SermonsPage } from "@/pages/SermonsPage";
+import { SermonEditorPage } from "@/pages/SermonEditorPage";
 import { ReadingPlansPage } from "@/pages/ReadingPlansPage";
 import { PlanDetailPage } from "@/pages/PlanDetailPage";
 import { SettingsPage } from "@/pages/SettingsPage";
@@ -65,6 +67,8 @@ export function App() {
               <Route path="/bookmarks" element={<BookmarksPage />} />
               <Route path="/highlights" element={<HighlightsPage />} />
               <Route path="/notes" element={<NotesPage />} />
+              <Route path="/sermons" element={<SermonsPage />} />
+              <Route path="/sermons/:id" element={<SermonEditorPage />} />
               <Route path="/reading-plans" element={<ReadingPlansPage />} />
               <Route path="/reading-plans/:planId" element={<PlanDetailPage />} />
               <Route path="/settings" element={<SettingsPage />} />

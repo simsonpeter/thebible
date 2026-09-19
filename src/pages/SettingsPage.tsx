@@ -15,7 +15,7 @@ export function SettingsPage() {
   const { settings, update } = useSettings();
   const { push } = useToast();
   const navigate = useNavigate();
-  const [storage, setStorage] = useState({ translations: 0, verses: 0, bookmarks: 0, notes: 0 });
+  const [storage, setStorage] = useState({ translations: 0, verses: 0, bookmarks: 0, notes: 0, sermons: 0 });
 
   useEffect(() => {
     void storageSummary().then(setStorage);
@@ -181,7 +181,7 @@ export function SettingsPage() {
 
       <SettingsSection title="Backup">
         <div className="p-4 text-sm text-muted">
-          Bookmarks {storage.bookmarks} • Notes {storage.notes}. Bible text is not exported.
+          Bookmarks {storage.bookmarks} • Notes {storage.notes} • Sermons {storage.sermons}. Bible text is not exported.
         </div>
         <div className="flex flex-wrap gap-2 p-4">
           <Button
@@ -215,7 +215,7 @@ export function SettingsPage() {
           <Button
             variant="danger"
             onClick={() => {
-              if (confirm("Reset local bookmarks, notes, highlights, plans, and settings? Bible text stays.")) {
+              if (confirm("Reset local bookmarks, notes, sermons, highlights, plans, and settings? Bible text stays.")) {
                 void resetUserData().then(() => push("Local user data reset", "success"));
               }
             }}
