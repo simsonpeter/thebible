@@ -4,7 +4,7 @@ import { parseVerseId, syncKey, verseId } from "@/utils/text";
 import { dailyIndex } from "@/services/dailyVerse";
 import { formatParallelShare, formatVerseShare } from "@/services/shareService";
 import { validateBibleImport } from "@/services/bibleValidation";
-import { BOOK_CATALOG } from "@/data/books";
+import { BOOK_CATALOG, bookDisplayName } from "@/data/books";
 import type { BibleImportFile } from "@/types/bible";
 
 describe("verse IDs", () => {
@@ -21,6 +21,15 @@ describe("verse IDs", () => {
 
   it("synchronizes parallel rows by book, chapter, and verse", () => {
     expect(syncKey("john", 3, 16)).toBe("john:3:16");
+  });
+});
+
+describe("book display names", () => {
+  it("uses English names for English and Tamil names for Tamil", () => {
+    expect(bookDisplayName("john", "en")).toBe("John");
+    expect(bookDisplayName("john", "ta")).toBe("யோவான்");
+    expect(bookDisplayName("galatians", "en")).toBe("Galatians");
+    expect(bookDisplayName("galatians", "ta")).toBe("கலாத்தியர்");
   });
 });
 

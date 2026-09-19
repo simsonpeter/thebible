@@ -7,14 +7,17 @@ export function ChapterSelector({
   bookId,
   value,
   onChange,
+  language,
 }: {
   bookId: string;
   value: number;
   onChange: (chapter: number) => void;
+  language: "en" | "ta";
 }) {
   const [open, setOpen] = useState(false);
   const book = getBookById(bookId);
   const count = book?.chapterCount ?? 1;
+  const bookName = language === "ta" ? book?.nameTamil : book?.nameEnglish;
 
   return (
     <>
@@ -26,7 +29,7 @@ export function ChapterSelector({
       >
         {value} ▼
       </button>
-      <Modal open={open} title={`${book?.nameEnglish ?? "Chapter"}`} onClose={() => setOpen(false)}>
+      <Modal open={open} title={`${bookName ?? "Chapter"}`} onClose={() => setOpen(false)}>
         <div className="grid grid-cols-5 gap-2 sm:grid-cols-6">
           {Array.from({ length: count }, (_, index) => index + 1).map((chapter) => (
             <button

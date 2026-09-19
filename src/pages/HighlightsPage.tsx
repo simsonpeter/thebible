@@ -16,7 +16,9 @@ export function HighlightsPage() {
         {rows.map((row) => (
           <Card key={row.verseId}>
             <p className="text-xs capitalize text-gold">{row.color}</p>
-            <h3 className="font-semibold">{formatReference(row.bookId, row.chapter, row.verseNumber)}</h3>
+            <h3 className={row.translationId === "bsi-ov" ? "tamil font-semibold" : "font-semibold"}>
+              {formatReference(row.bookId, row.chapter, row.verseNumber, row.translationId === "bsi-ov" ? "ta" : "en")}
+            </h3>
             <div className="mt-3 flex gap-2">
               <button
                 type="button"

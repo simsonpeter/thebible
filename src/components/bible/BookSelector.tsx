@@ -6,9 +6,11 @@ import { cn } from "@/utils/misc";
 export function BookSelector({
   value,
   onChange,
+  language,
 }: {
   value: string;
   onChange: (bookId: string) => void;
+  language: "en" | "ta";
 }) {
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState("");
@@ -32,7 +34,7 @@ export function BookSelector({
     <>
       <button
         type="button"
-        className="min-h-11 max-w-[11rem] rounded-full border border-navy/10 bg-white px-3 text-left text-sm dark:border-white/10 dark:bg-white/5"
+        className="min-h-11 max-w-[12rem] rounded-full border border-navy/10 bg-white px-3 text-left text-sm dark:border-white/10 dark:bg-white/5"
         onClick={() => {
           setQuery("");
           setTestament(BOOK_CATALOG.find((item) => item.id === value)?.testament ?? "NT");
@@ -42,7 +44,9 @@ export function BookSelector({
       >
         {book ? (
           <span className="block truncate">
-            <span className="tamil font-medium">{book.nameTamil}</span>
+            <span className={cn("font-medium", language === "ta" && "tamil")}>
+              {language === "ta" ? book.nameTamil : book.nameEnglish}
+            </span>
             <span className="ml-1 text-muted">▼</span>
           </span>
         ) : (
@@ -55,7 +59,7 @@ export function BookSelector({
             type="search"
             value={query}
             onChange={(event) => setQuery(event.target.value)}
-            placeholder="Search Matthew • மத்தேயு"
+            placeholder={language === "ta" ? "மத்தேயு • யோவான்" : "Matthew • John"}
             className="mb-3 min-h-11 w-full rounded-full border border-navy/10 bg-white px-4 text-sm dark:border-white/10 dark:bg-white/5"
           />
           <div className="flex gap-2">
@@ -89,8 +93,9 @@ export function BookSelector({
                 setOpen(false);
               }}
             >
-              <span className="tamil block text-sm font-medium">{item.nameTamil}</span>
-              <span className="text-xs opacity-80">{item.nameEnglish}</span>
+              <span className={cn("block text-sm font-medium", language === "ta" && "tamil")}>
+                {language === "ta" ? item.nameTamil : item.nameEnglish}
+              </span>
             </button>
           ))}
         </div>

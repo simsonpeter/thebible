@@ -5,11 +5,12 @@ import { Button } from "@/components/ui/Button";
 import { getProgressSummary } from "@/services/progressService";
 import { listRecentHistory, clearHistory } from "@/services/historyService";
 import { formatReference } from "@/utils/reference";
+import type { ReadingHistoryRecord } from "@/types/userData";
 import { useNavigate } from "react-router-dom";
 
 export function ProgressPage() {
   const [summary, setSummary] = useState({ ot: 0, nt: 0, whole: 0, chaptersRead: 0, booksOpened: 0 });
-  const [recent, setRecent] = useState<Array<{ bookId: string; chapter: number }>>([]);
+  const [recent, setRecent] = useState<ReadingHistoryRecord[]>([]);
   const navigate = useNavigate();
 
   async function reload() {
@@ -47,7 +48,7 @@ export function ProgressPage() {
             className="min-h-12 rounded-2xl bg-white/80 px-4 text-left dark:bg-white/5"
             onClick={() => navigate(`/bible/${item.bookId}/${item.chapter}`)}
           >
-            {formatReference(item.bookId, item.chapter)}
+            {formatReference(item.bookId, item.chapter, undefined, item.translationId === "bsi-ov" ? "ta" : "en")}
           </button>
         ))}
       </div>

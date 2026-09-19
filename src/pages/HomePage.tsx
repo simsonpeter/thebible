@@ -15,6 +15,7 @@ import { addBookmark } from "@/services/bookmarkService";
 import { listPlans, planProgress } from "@/services/planService";
 import { copyText, formatVerseShare, shareOrCopy } from "@/services/shareService";
 import { formatReference } from "@/utils/reference";
+import { cn } from "@/utils/misc";
 import type { VerseRecord } from "@/types/bible";
 import type { ReadingHistoryRecord } from "@/types/userData";
 import { db } from "@/db";
@@ -91,12 +92,9 @@ export function HomePage() {
 
       <Card className="mb-4 bg-navy text-white dark:bg-navy-soft">
         <p className="text-xs tracking-[0.25em] text-gold-soft uppercase">Continue Reading</p>
-        <h2 className="mt-2 text-2xl font-semibold">
+        <h2 className={cn("mt-2 text-2xl font-semibold", settings.defaultTranslation === "bsi-ov" && "tamil")}>
           {formatReference(continueBook, continueChapter, continueVerse || undefined, settings.defaultTranslation === "bsi-ov" ? "ta" : "en")}
         </h2>
-        <p className="mt-1 text-sm text-gold-soft">
-          {formatReference(continueBook, continueChapter, continueVerse || undefined, "en")}
-        </p>
         <Button
           variant="gold"
           className="mt-4"
@@ -237,7 +235,7 @@ export function HomePage() {
               key={`${item.bookId}-${item.chapter}-${item.openedAt}`}
               onClick={() => navigate(`/bible/${item.bookId}/${item.chapter}`)}
             >
-              {formatReference(item.bookId, item.chapter)}
+              {formatReference(item.bookId, item.chapter, undefined, item.translationId === "bsi-ov" ? "ta" : "en")}
             </Card>
           ))}
         </div>

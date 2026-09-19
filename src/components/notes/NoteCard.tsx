@@ -16,7 +16,9 @@ export function NoteCard({
 }) {
   return (
     <Card>
-      <p className="text-sm font-semibold">{formatReference(note.bookId, note.chapter, note.verseNumber)}</p>
+      <p className={note.translationId === "bsi-ov" ? "tamil text-sm font-semibold" : "text-sm font-semibold"}>
+        {formatReference(note.bookId, note.chapter, note.verseNumber, note.translationId === "bsi-ov" ? "ta" : "en")}
+      </p>
       <p className="mt-2 whitespace-pre-wrap">{note.text}</p>
       <p className="mt-2 text-xs text-muted">{formatDisplayDate(note.updatedAt)}</p>
       <div className="mt-3 flex gap-2">

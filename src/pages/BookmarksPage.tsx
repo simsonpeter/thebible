@@ -62,7 +62,13 @@ export function BookmarksPage() {
               onShare={() =>
                 void shareOrCopy(
                   "NJC Bible App",
-                  formatRange(bookmark.bookId, bookmark.chapter, bookmark.verseStart, bookmark.verseEnd),
+                  formatRange(
+                    bookmark.bookId,
+                    bookmark.chapter,
+                    bookmark.verseStart,
+                    bookmark.verseEnd,
+                    bookmark.translationId === "bsi-ov" ? "ta" : "en",
+                  ),
                 )
               }
               onDelete={() => bookmark.id && void deleteBookmark(bookmark.id)}

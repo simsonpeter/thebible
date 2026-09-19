@@ -92,6 +92,12 @@ export function getBookById(id: string): BookDefinition | undefined {
   return BOOK_CATALOG.find((book) => book.id === id);
 }
 
+export function bookDisplayName(bookId: string, language: "en" | "ta"): string {
+  const book = getBookById(bookId);
+  if (!book) return bookId;
+  return language === "ta" ? book.nameTamil : book.nameEnglish;
+}
+
 export function getBookByAlias(input: string): BookDefinition | undefined {
   return aliasIndex.get(normalizeAlias(input));
 }

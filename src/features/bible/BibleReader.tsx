@@ -273,10 +273,9 @@ export function BibleReader() {
               ←
             </button>
             <div className="min-w-0 flex-1">
-              <p className="truncate font-semibold">
-                {book?.nameEnglish} {chapter}
+              <p className={cn("truncate font-semibold", language === "ta" && "tamil")}>
+                {language === "ta" ? book?.nameTamil : book?.nameEnglish} {chapter}
               </p>
-              <p className="tamil truncate text-xs text-muted">{book?.nameTamil}</p>
             </div>
             <button type="button" className="min-h-11 min-w-11 text-xl" aria-label="Search" onClick={() => navigate("/search")}>
               ⌕
@@ -287,8 +286,8 @@ export function BibleReader() {
           </div>
           <div className="flex flex-wrap items-center gap-2">
             <TranslationSelector value={translationId} onChange={changeTranslation} />
-            <BookSelector value={bookId} onChange={changeBook} />
-            <ChapterSelector bookId={bookId} value={chapter} onChange={changeChapter} />
+            <BookSelector value={bookId} language={language} onChange={changeBook} />
+            <ChapterSelector bookId={bookId} value={chapter} language={language} onChange={changeChapter} />
             <ModeToggle value={mode} onChange={changeMode} />
             <div className="inline-flex rounded-full bg-navy/8 p-1 dark:bg-white/10" role="group" aria-label="Font size">
               <button type="button" className="min-h-10 min-w-10 text-sm" aria-label="Decrease font size" onClick={() => bumpFont(-1)}>
@@ -339,7 +338,9 @@ export function BibleReader() {
         ) : null}
 
         <h2 className="mb-6 text-center">
-          <span className="tamil block text-2xl">{book?.nameTamil}</span>
+          <span className={cn("block text-2xl", language === "ta" && "tamil")}>
+            {language === "ta" ? book?.nameTamil : book?.nameEnglish}
+          </span>
           <span className="text-4xl font-semibold text-navy dark:text-gold">{chapter}</span>
         </h2>
 
