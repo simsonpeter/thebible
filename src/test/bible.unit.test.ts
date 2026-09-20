@@ -4,7 +4,7 @@ import { parseVerseId, syncKey, verseId } from "@/utils/text";
 import { dailyIndex } from "@/services/dailyVerse";
 import { formatParallelRangeShare, formatParallelShare, formatVerseShare, formatVersesShare } from "@/services/shareService";
 import { validateBibleImport } from "@/services/bibleValidation";
-import { BOOK_CATALOG, bookDisplayName } from "@/data/books";
+import { BOOK_CATALOG, bookDisplayName, compareByBibleOrder } from "@/data/books";
 import { buildPlanDays, parseNjcReference } from "@/data/readingPlans";
 import type { BibleImportFile } from "@/types/bible";
 
@@ -127,5 +127,17 @@ describe("import validation", () => {
 
   it("knows all 66 canonical books", () => {
     expect(BOOK_CATALOG).toHaveLength(66);
+  });
+
+  it("orders verses by Bible book, then chapter, then verse", () => {
+    const rows = [
+      { bookId: "john", chapter: 3, number: 16, translationId: "kjv" },
+      { bookId: "genesis", chapter: 1, number: 1, translationId: "kjv" },
+      { bookId: "revelation", chapter: 22, number: 21, translationId: "kjv" },
+      { bookId: "genesis", chapter: 1, number: 3, translationId: "kjv" },
+      { bookId: "genesis", chapter: 2, number: 1, translationId: "kjv" },
+    ];
+    const ordered = [...rows].sort(compareByBibleOrder).map((row) => `${row.bookId}:${row.chapter}:${row.number}`);
+    expect(ordered).toEqual(["genesis:1:1", "genesis:1:3", "genesis:2:1", "john:3:16", "revelation:22:21"]);
   });
 });

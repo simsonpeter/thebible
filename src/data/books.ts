@@ -120,3 +120,20 @@ export function totalChapters(testament?: "OT" | "NT"): number {
 export const TOTAL_CHAPTERS = totalChapters();
 export const OT_CHAPTERS = totalChapters("OT");
 export const NT_CHAPTERS = totalChapters("NT");
+
+const BOOK_ORDER = new Map(BOOK_CATALOG.map((book) => [book.id, book.order]));
+
+export function bookOrder(bookId: string): number {
+  return BOOK_ORDER.get(bookId) ?? 999;
+}
+
+export function compareByBibleOrder(
+  left: { bookId: string; chapter: number; number: number; translationId?: string },
+  right: { bookId: string; chapter: number; number: number; translationId?: string },
+): number {
+  const book = bookOrder(left.bookId) - bookOrder(right.bookId);
+  if (book) return book;
+  if (left.chapter !== right.chapter) return left.chapter - right.chapter;
+  if (left.number !== right.number) return left.number - right.number;
+  return (left.translationId ?? "").localeCompare(right.translationId ?? "");
+}

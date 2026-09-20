@@ -1,6 +1,6 @@
 import { db } from "@/db";
 import type { VerseRecord } from "@/types/bible";
-import { otBooks, ntBooks } from "@/data/books";
+import { compareByBibleOrder, otBooks, ntBooks } from "@/data/books";
 import { normalizeForSearch } from "@/utils/text";
 
 export type SearchScope = "current" | "both" | "book" | "ot" | "nt";
@@ -66,13 +66,12 @@ export async function searchBible(query: SearchQuery): Promise<SearchHit[]> {
         if (exact) return verse.normalizedText.includes(needle);
         return verse.normalizedText.includes(needle) || verse.tokens.some((token) => token.includes(needle));
       })
-      .limit(RESULT_LIMIT)
       .toArray();
     for (const verse of rows) {
       hits.push({ verse, snippet: snippet(verse.text, needle) });
-      if (hits.length >= RESULT_LIMIT) return hits;
     }
   }
 
-  return hits;
+  hits.sort((left, right) => compareByBibleOrder(left.verse, right.verse));
+  return hits.slice(0, RESULT_LIMIT);
 }
