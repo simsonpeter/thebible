@@ -100,17 +100,13 @@ export function HomePage() {
         </Button>
       </section>
 
-      <button
-        type="button"
-        className="mb-4 w-full rounded-3xl bg-[#12263A] p-5 text-left text-white dark:bg-[#1d3b5a]"
-        onClick={() => navigate(`/reading-plans/${planInfo.id}`)}
-      >
-        <p className="text-xs tracking-[0.25em] text-[#e8d5a3] uppercase">Reading Plan</p>
-        <h3 className="mt-2 text-2xl font-semibold text-white">{planInfo.name}</h3>
-        <p className="mt-1 text-sm text-white/80">
+      <Card className="mb-4" onClick={() => navigate(`/reading-plans/${planInfo.id}`)}>
+        <p className="text-xs tracking-[0.25em] text-gold uppercase">Reading Plan</p>
+        <h3 className="mt-2 font-semibold">{planInfo.name}</h3>
+        <p className="mt-1 text-sm text-muted">
           Day {planInfo.day} / {planInfo.total}
         </p>
-      </button>
+      </Card>
 
       <div className="mb-4 grid grid-cols-2 gap-3">
         {[
@@ -129,8 +125,8 @@ export function HomePage() {
       </div>
 
       <Card className="mb-4" onClick={() => navigate("/sermons")}>
-        <p className="text-xs tracking-[0.25em] text-gold uppercase">Sunday sermon</p>
-        <h2 className="mt-2 font-semibold">Prepare this week&apos;s notes</h2>
+        <p className="text-xs tracking-[0.25em] text-gold uppercase">Notes</p>
+        <h2 className="mt-2 font-semibold">Your personal notes</h2>
         <p className="mt-1 text-sm text-muted">
           {sermonCount ? `${sermonCount} notebook${sermonCount === 1 ? "" : "s"} on this phone` : "Collect verses, write the outline, then share to Google Drive."}
         </p>
