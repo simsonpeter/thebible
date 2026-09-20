@@ -1,6 +1,13 @@
+import { TRANSLATION_OPTIONS, orderParallelTranslations } from "@/config/translations";
 import { BOOK_CATALOG, getBookById } from "@/data/books";
 import { db } from "@/db";
 import type { TranslationMeta, VerseRecord } from "@/types/bible";
+import type { ParallelOrder } from "@/types/settings";
+
+export interface ParallelVerse {
+  number: number;
+  byId: Record<string, VerseRecord | undefined>;
+}
 
 export async function listTranslations(): Promise<TranslationMeta[]> {
   return db.translations.orderBy("id").toArray();
@@ -56,26 +63,38 @@ export function adjacentChapter(bookId: string, chapter: number, delta: number):
   };
 }
 
+export async function listParallelTranslationIds(order: ParallelOrder = "tamil-first"): Promise<string[]> {
+  const rows = await db.translations.toArray();
+  const available = new Set(rows.filter((row) => row.verseCount > 0).map((row) => row.id));
+  const ids: string[] = TRANSLATION_OPTIONS.map((option) => option.id as string).filter((id) => available.has(id));
+  for (const id of available) {
+    if (!ids.includes(id)) ids.push(id);
+  }
+  return orderParallelTranslations(
+    ids.length ? ids : TRANSLATION_OPTIONS.map((option) => option.id as string),
+    order,
+  );
+}
+
 export async function getParallelVerses(
   bookId: string,
   chapter: number,
-  tamilId = "bsi-ov",
-  englishId = "kjv",
-): Promise<Array<{ number: number; tamil?: VerseRecord; english?: VerseRecord }>> {
-  const [tamil, english] = await Promise.all([
-    getChapterVerses(tamilId, bookId, chapter),
-    getChapterVerses(englishId, bookId, chapter),
-  ]);
+  translationIds?: string[],
+): Promise<ParallelVerse[]> {
+  const ids = translationIds?.length ? translationIds : await listParallelTranslationIds();
+  const chapters = await Promise.all(ids.map((id) => getChapterVerses(id, bookId, chapter)));
   const numbers = new Set<number>();
-  for (const verse of tamil) numbers.add(verse.number);
-  for (const verse of english) numbers.add(verse.number);
-  const tamilMap = new Map(tamil.map((verse) => [verse.number, verse]));
-  const englishMap = new Map(english.map((verse) => [verse.number, verse]));
+  const maps = chapters.map((verses) => {
+    for (const verse of verses) numbers.add(verse.number);
+    return new Map(verses.map((verse) => [verse.number, verse]));
+  });
   return [...numbers]
     .sort((a, b) => a - b)
-    .map((number) => ({
-      number,
-      tamil: tamilMap.get(number),
-      english: englishMap.get(number),
-    }));
+    .map((number) => {
+      const byId: Record<string, VerseRecord | undefined> = {};
+      ids.forEach((id, index) => {
+        byId[id] = maps[index]?.get(number);
+      });
+      return { number, byId };
+    });
 }

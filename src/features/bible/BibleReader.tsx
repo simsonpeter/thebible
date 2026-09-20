@@ -16,7 +16,15 @@ import { db } from "@/db";
 import { useSettings } from "@/hooks/useSettings";
 import { useToast } from "@/hooks/useToast";
 import { useWakeLock } from "@/hooks/useWakeLock";
-import { adjacentChapter, getChapterVerses, getParallelVerses, getTranslation } from "@/services/bibleService";
+import { translationUiLanguage } from "@/config/translations";
+import {
+  adjacentChapter,
+  getChapterVerses,
+  getParallelVerses,
+  getTranslation,
+  listParallelTranslationIds,
+  type ParallelVerse,
+} from "@/services/bibleService";
 import { addBookmark } from "@/services/bookmarkService";
 import { getHighlightMap, removeHighlight, setHighlight } from "@/services/highlightService";
 import { recordChapterOpen } from "@/services/historyService";
@@ -47,7 +55,8 @@ export function BibleReader() {
   const mode = (searchParams.get("mode") as "single" | "parallel" | null) ?? settings.readingMode;
   const book = getBookById(bookId);
   const [verses, setVerses] = useState<VerseRecord[]>([]);
-  const [pairs, setPairs] = useState<Array<{ number: number; tamil?: VerseRecord; english?: VerseRecord }>>([]);
+  const [pairs, setPairs] = useState<ParallelVerse[]>([]);
+  const [parallelIds, setParallelIds] = useState<string[]>([]);
   const [highlights, setHighlights] = useState<Map<string, { color: HighlightColor }>>(new Map());
   const [selection, setSelection] = useState<{ start: number; end: number } | null>(
     verseParam ? { start: verseParam, end: verseParam } : null,
@@ -98,8 +107,10 @@ export function BibleReader() {
       setMissing(false);
       setLoaded(false);
       if (mode === "parallel") {
-        const nextPairs = await getParallelVerses(bookId, chapter);
+        const ids = await listParallelTranslationIds(settings.parallelOrder);
+        const nextPairs = await getParallelVerses(bookId, chapter, ids);
         if (!cancelled) {
+          setParallelIds(ids);
           setPairs(nextPairs);
           setLoaded(true);
         }
@@ -124,7 +135,7 @@ export function BibleReader() {
     return () => {
       cancelled = true;
     };
-  }, [bookId, chapter, translationId, mode, verseParam, settings.rememberPosition, update]);
+  }, [bookId, chapter, translationId, mode, verseParam, settings.parallelOrder, settings.rememberPosition, update]);
 
   useEffect(() => {
     if (!verseParam) return;
@@ -167,10 +178,14 @@ export function BibleReader() {
     if (!range) return undefined;
     if (mode === "parallel") {
       const pair = pairs.find((item) => item.number === range.start);
-      return settings.parallelOrder === "english-first" ? pair?.english ?? pair?.tamil : pair?.tamil ?? pair?.english;
+      for (const id of parallelIds) {
+        const verse = pair?.byId[id];
+        if (verse && !verse.isPlaceholder) return verse;
+      }
+      return parallelIds.map((id) => pair?.byId[id]).find(Boolean);
     }
     return verses.find((item) => item.number === range.start);
-  }, [range, mode, pairs, verses, settings.parallelOrder]);
+  }, [range, mode, pairs, verses, parallelIds]);
 
   const selectedSingleVerses = useMemo(() => {
     if (!range) return [];
@@ -265,8 +280,10 @@ export function BibleReader() {
         chapter,
         rows: selectedPairs.map((pair) => ({
           number: pair.number,
-          tamil: pair.tamil?.isPlaceholder ? undefined : pair.tamil?.text,
-          english: pair.english?.text,
+          columns: parallelIds.map((id) => ({
+            id,
+            text: pair.byId[id]?.isPlaceholder ? undefined : pair.byId[id]?.text,
+          })),
         })),
       });
     }
@@ -302,7 +319,7 @@ export function BibleReader() {
     if (!range) return;
     const verse = selectedVerse;
     const text = verse?.text ?? "";
-    const verseLanguage = verse?.translationId === "bsi-ov" ? "ta" : "en";
+    const verseLanguage = translationUiLanguage(verse?.translationId ?? translationId);
     const shareText = selectedShareText();
     if (action === "copy") {
       await copyText(shareText);
@@ -329,13 +346,13 @@ export function BibleReader() {
   function versesForSermon(): VerseRecord[][] {
     if (!range) return [];
     if (mode === "parallel") {
-      const tamil = selectedPairs
-        .map((pair) => pair.tamil)
-        .filter((item): item is VerseRecord => Boolean(item && !item.isPlaceholder));
-      const english = selectedPairs
-        .map((pair) => pair.english)
-        .filter((item): item is VerseRecord => Boolean(item && !item.isPlaceholder));
-      return [tamil, english].filter((group) => group.length > 0);
+      return parallelIds
+        .map((id) =>
+          selectedPairs
+            .map((pair) => pair.byId[id])
+            .filter((item): item is VerseRecord => Boolean(item && !item.isPlaceholder)),
+        )
+        .filter((group) => group.length > 0);
     }
     return selectedSingleVerses.length ? [selectedSingleVerses] : [];
   }
@@ -356,12 +373,12 @@ export function BibleReader() {
     push(total > 1 ? `${total} verses added to sermon` : "Verse added to sermon", "success");
   }
 
-  const language = translationId === "bsi-ov" ? "ta" : "en";
+  const language = translationUiLanguage(translationId);
   const empty =
     loaded &&
     (mode === "single"
       ? verses.length === 0
-      : pairs.every((pair) => !pair.english && !pair.tamil));
+      : pairs.every((pair) => parallelIds.every((id) => !pair.byId[id])));
 
   return (
     <div className={cn("safe-bottom min-h-screen", range && "pb-44", settings.distractionFree && "bg-paper dark:bg-[#090c10]")}>
@@ -478,9 +495,8 @@ export function BibleReader() {
               <ParallelVerseRow
                 key={pair.number}
                 number={pair.number}
-                tamil={pair.tamil}
-                english={pair.english}
-                order={settings.parallelOrder}
+                byId={pair.byId}
+                translationIds={parallelIds}
                 layout={layout}
                 showNumber={settings.showVerseNumbers}
                 selected={Boolean(range && pair.number >= range.start && pair.number <= range.end)}

@@ -150,7 +150,7 @@ describe("bible import, search, and parallel sync", () => {
     const kjv = await getChapterVerses("kjv", "john", 3);
     expect(kjv[0]?.text).toContain("For God so loved the world");
     const pairs = await getParallelVerses("john", 3);
-    expect(pairs[0]?.english?.number).toBe(pairs[0]?.tamil?.number);
+    expect(pairs[0]?.byId.kjv?.number).toBe(pairs[0]?.byId["bsi-ov"]?.number);
     const hits = await searchBible({ text: "loved", translationId: "kjv", scope: "current" });
     expect(hits[0]?.verse.number).toBe(16);
     const tamilHits = await searchBible({ text: "Licensed", translationId: "bsi-ov", scope: "current" });

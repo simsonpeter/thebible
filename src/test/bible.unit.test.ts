@@ -5,6 +5,7 @@ import { dailyIndex } from "@/services/dailyVerse";
 import { formatParallelRangeShare, formatParallelShare, formatVerseShare, formatVersesShare } from "@/services/shareService";
 import { validateBibleImport } from "@/services/bibleValidation";
 import { BOOK_CATALOG, bookDisplayName, compareByBibleOrder } from "@/data/books";
+import { orderParallelTranslations } from "@/config/translations";
 import { buildPlanDays, parseNjcReference } from "@/data/readingPlans";
 import type { BibleImportFile } from "@/types/bible";
 
@@ -43,6 +44,17 @@ describe("NJC reading plan", () => {
     expect(days[0]?.[0]?.bookId).toBe("matthew");
     expect(days[364]?.some((item) => item.bookId === "malachi")).toBe(true);
     expect(days.every((day) => day.length > 0)).toBe(true);
+  });
+});
+
+describe("parallel translations", () => {
+  it("includes every bundled version and can put English first", () => {
+    expect(orderParallelTranslations(["tanglish", "kjv", "bsi-ov"])).toEqual(["bsi-ov", "tanglish", "kjv"]);
+    expect(orderParallelTranslations(["tanglish", "kjv", "bsi-ov"], "english-first")).toEqual([
+      "kjv",
+      "bsi-ov",
+      "tanglish",
+    ]);
   });
 });
 
