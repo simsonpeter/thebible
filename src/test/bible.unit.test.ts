@@ -11,7 +11,7 @@ import type { BibleImportFile } from "@/types/bible";
 describe("verse IDs", () => {
   it("creates stable translation-scoped ids", () => {
     expect(verseId("kjv", "john", 3, 16)).toBe("kjv:john:3:16");
-    expect(verseId("bsi-ov", "john", 3, 16)).toBe("bsi-ov:john:3:16");
+    expect(verseId("tanglish", "john", 3, 16)).toBe("tanglish:john:3:16");
     expect(parseVerseId("kjv:john:3:16")).toEqual({
       translationId: "kjv",
       bookId: "john",

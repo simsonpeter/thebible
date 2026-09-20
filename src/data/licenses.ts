@@ -32,6 +32,16 @@ export const LICENSES = {
     year: 1957,
     copyrightHolder: bibleLicenses.bsiOv.publisherText || undefined,
   },
+  tanglish: {
+    id: bibleLicenses.tanglish.id,
+    name: bibleLicenses.tanglish.name,
+    abbreviation: bibleLicenses.tanglish.abbreviation,
+    language: bibleLicenses.tanglish.language,
+    license: bibleLicenses.tanglish.copyrightText,
+    licenseDetails: bibleLicenses.tanglish.permissionText,
+    source: bibleLicenses.tanglish.publisherText,
+    year: 2019,
+  },
 };
 
 export const DEMO_PLACEHOLDER = "[Licensed Bible text required]";

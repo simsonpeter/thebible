@@ -36,7 +36,7 @@ export function SearchPage() {
       }
       setSearching(true);
       const translationId =
-        language === "ta" ? "bsi-ov" : language === "en" ? "kjv" : settings.defaultTranslation;
+        language === "ta" ? "bsi-ov" : language === "en" ? "kjv" : language === "tl" ? "tanglish" : settings.defaultTranslation;
       void indexedSearch({
         text: query,
         translationId,
@@ -59,8 +59,9 @@ export function SearchPage() {
         {(
           [
             ["ta", "Tamil"],
+            ["tl", "Tanglish"],
             ["en", "English"],
-            ["both", "Both"],
+            ["both", "All"],
           ] as Array<[SearchLanguage, string]>
         ).map(([id, label]) => (
           <button

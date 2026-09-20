@@ -24,6 +24,17 @@ export const bibleLicenses = {
       "Packaged from the per-book JSON files in https://github.com/aruljohn/Bible-tamil. That repository's MIT license covers the packaging, not a named publisher grant for BSI New Ortho. The wording is classic Tamil Old Version (pre-New Ortho). The 1957 Bible Society of India and Ceylon Tamil Old Version is documented as public domain in India. NJC Bible App does not present this text as authorized BSI New Ortho.",
     publisherText: "Source files: Arul John, Bible-tamil. Scripture wording: classic Tamil Old Version.",
   },
+  tanglish: {
+    id: "tanglish",
+    name: "Tanglish Bible",
+    abbreviation: "Tanglish",
+    language: "en" as const,
+    copyrightText: "Tamil Romanised Bible (TAMRB). Packaged from a public Bible-module collection.",
+    permissionText:
+      "Romanized Tamil (Tanglish) wording from TAMRB / Tamil Romanised Bible 2019 modules in https://github.com/yesudas/all-bible-databases (Tanglish folder). That repository describes the databases as publicly available and free to reuse in apps. This is a Latin-script rendering of classic Tamil Bible wording, not authorized BSI Tamil O.V. New Ortho.",
+    publisherText:
+      "https://github.com/yesudas/all-bible-databases/tree/main/Bibles/Tamil-Bible-Database-and-Software-Modules/Tanglish",
+  },
 };
 
 export function bsiNoticeFromConfig(): string {

@@ -4,7 +4,7 @@ import { compareByBibleOrder, otBooks, ntBooks } from "@/data/books";
 import { normalizeForSearch } from "@/utils/text";
 
 export type SearchScope = "current" | "both" | "book" | "ot" | "nt";
-export type SearchLanguage = "ta" | "en" | "both";
+export type SearchLanguage = "ta" | "en" | "tl" | "both";
 
 export interface SearchQuery {
   text: string;
@@ -50,9 +50,11 @@ export async function searchBible(query: SearchQuery): Promise<SearchHit[]> {
       ? ["bsi-ov"]
       : language === "en"
         ? ["kjv"]
-        : query.scope === "both"
-          ? ["bsi-ov", "kjv"]
-          : [query.translationId];
+        : language === "tl"
+          ? ["tanglish"]
+          : query.scope === "both"
+            ? ["bsi-ov", "tanglish", "kjv"]
+            : [query.translationId];
   const ot = new Set(otBooks().map((book) => book.id));
   const nt = new Set(ntBooks().map((book) => book.id));
   const hits: SearchHit[] = [];

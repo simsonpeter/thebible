@@ -11,6 +11,7 @@
     "test:watch": "vitest",
     "icons": "node scripts/rasterize-icons.mjs",
     "prepare:tamil": "node scripts/prepare-tamil-ov.mjs",
+    "prepare:tanglish": "node scripts/prepare-tanglish.mjs",
     "apk": "bubblewrap update --manifest android-twa && bubblewrap build --skipPwaValidation --manifest android-twa"
   },
   "dependencies": {

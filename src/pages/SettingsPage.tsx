@@ -10,6 +10,7 @@ import { useToast } from "@/hooks/useToast";
 import { useNavigate } from "react-router-dom";
 import { APP_NAME, APP_VERSION } from "@/data/licenses";
 import { bsiNoticeFromConfig } from "@/config/bibleLicenses";
+import { TRANSLATION_OPTIONS } from "@/config/translations";
 import { useAuth } from "@/hooks/useAuth";
 
 export function SettingsPage() {
@@ -119,12 +120,15 @@ export function SettingsPage() {
 
       <SettingsSection title="Bible">
         <Row label="Default Bible">
-          <Chip active={settings.defaultTranslation === "bsi-ov" } onClick={() => void update({ defaultTranslation: "bsi-ov" })}>
-            தமிழ் O.V.
-          </Chip>
-          <Chip active={settings.defaultTranslation === "kjv"} onClick={() => void update({ defaultTranslation: "kjv" })}>
-            English KJV
-          </Chip>
+          {TRANSLATION_OPTIONS.map((option) => (
+            <Chip
+              key={option.id}
+              active={settings.defaultTranslation === option.id}
+              onClick={() => void update({ defaultTranslation: option.id })}
+            >
+              {option.label}
+            </Chip>
+          ))}
         </Row>
         <Row label="Parallel mode">
           <Chip active={settings.readingMode === "single"} onClick={() => void update({ readingMode: "single" })}>

@@ -12,6 +12,7 @@ import { listRecentHistory } from "@/services/historyService";
 import { listPlans, planProgress } from "@/services/planService";
 import { formatReference } from "@/utils/reference";
 import { cn } from "@/utils/misc";
+import { isTamilScript, translationUiLanguage, TRANSLATION_OPTIONS } from "@/config/translations";
 import type { ReadingHistoryRecord } from "@/types/userData";
 import { db } from "@/db";
 
@@ -55,20 +56,16 @@ export function HomePage() {
       </div>
 
       <div className="mb-4 flex flex-wrap items-center gap-2">
-        <button
-          type="button"
-          className={`min-h-11 rounded-full px-3 text-sm ${settings.defaultTranslation === "bsi-ov" ? "bg-navy text-white" : "bg-paper-2 dark:bg-white/5"}`}
-          onClick={() => void update({ defaultTranslation: "bsi-ov" })}
-        >
-          தமிழ் O.V.
-        </button>
-        <button
-          type="button"
-          className={`min-h-11 rounded-full px-3 text-sm ${settings.defaultTranslation === "kjv" ? "bg-navy text-white" : "bg-paper-2 dark:bg-white/5"}`}
-          onClick={() => void update({ defaultTranslation: "kjv" })}
-        >
-          English KJV
-        </button>
+        {TRANSLATION_OPTIONS.map((option) => (
+          <button
+            key={option.id}
+            type="button"
+            className={`min-h-11 rounded-full px-3 text-sm ${settings.defaultTranslation === option.id ? "bg-navy text-white" : "bg-paper-2 dark:bg-white/5"}`}
+            onClick={() => void update({ defaultTranslation: option.id })}
+          >
+            {option.label}
+          </button>
+        ))}
         <ModeToggle
           value={settings.readingMode}
           onChange={(mode) => void update({ readingMode: mode })}
@@ -84,8 +81,8 @@ export function HomePage() {
 
       <section className="mb-4 rounded-3xl bg-[#12263A] p-5 text-white dark:bg-[#1d3b5a]">
         <p className="text-xs tracking-[0.25em] text-[#e8d5a3] uppercase">Continue Reading</p>
-        <h2 className={cn("mt-2 text-2xl font-semibold text-white", settings.defaultTranslation === "bsi-ov" && "tamil")}>
-          {formatReference(continueBook, continueChapter, continueVerse || undefined, settings.defaultTranslation === "bsi-ov" ? "ta" : "en")}
+        <h2 className={cn("mt-2 text-2xl font-semibold text-white", isTamilScript(settings.defaultTranslation) && "tamil")}>
+          {formatReference(continueBook, continueChapter, continueVerse || undefined, translationUiLanguage(settings.defaultTranslation))}
         </h2>
         <Button
           variant="gold"
@@ -143,7 +140,7 @@ export function HomePage() {
               key={`${item.bookId}-${item.chapter}-${item.openedAt}`}
               onClick={() => navigate(`/bible/${item.bookId}/${item.chapter}`)}
             >
-              {formatReference(item.bookId, item.chapter, undefined, item.translationId === "bsi-ov" ? "ta" : "en")}
+              {formatReference(item.bookId, item.chapter, undefined, translationUiLanguage(item.translationId))}
             </Card>
           ))}
         </div>

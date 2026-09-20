@@ -40,6 +40,7 @@ export default defineConfig({
         "bible-data/kjv/kjv.json",
         "bible-data/bsi-ov/bsi-ov.json",
         "bible-data/bsi-ov/sample.json",
+        "bible-data/tanglish/tanglish.json",
         "data/kjv-source.json",
         "data/bsi-ov.sample.json",
         "data/licenses.json",
@@ -80,7 +81,7 @@ export default defineConfig({
       },
       workbox: {
         globPatterns: ["**/*.{js,css,html,ico,svg,png,woff,woff2,json,webmanifest}"],
-        maximumFileSizeToCacheInBytes: 20 * 1024 * 1024,
+        maximumFileSizeToCacheInBytes: 30 * 1024 * 1024,
         navigateFallback: "index.html",
         cleanupOutdatedCaches: true,
         skipWaiting: true,

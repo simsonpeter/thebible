@@ -217,7 +217,7 @@ export function BibleReader() {
 
   function changeMode(next: "single" | "parallel") {
     const paramsObj = new URLSearchParams(searchParams);
-    paramsObj.set("translation", translationId === "bsi-ov" ? "bsi-ov" : "kjv");
+    paramsObj.set("translation", translationId);
     paramsObj.set("mode", next);
     setSearchParams(paramsObj);
     void update({ readingMode: next });

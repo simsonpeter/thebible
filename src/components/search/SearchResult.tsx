@@ -1,6 +1,7 @@
 import type { SearchHit } from "@/services/searchService";
 import { formatReference } from "@/utils/reference";
 import { escapeRegExp } from "@/utils/text";
+import { isTamilScript, translationLabel, translationUiLanguage } from "@/config/translations";
 
 export function SearchResult({
   hit,
@@ -11,14 +12,14 @@ export function SearchResult({
   query: string;
   onOpen: () => void;
 }) {
-  const language = hit.verse.translationId === "bsi-ov" ? "ta" : "en";
+  const language = translationUiLanguage(hit.verse.translationId);
   return (
     <button type="button" className="w-full rounded-3xl bg-white/80 p-4 text-left dark:bg-white/5" onClick={onOpen}>
       <p className="text-sm font-semibold">
         {formatReference(hit.verse.bookId, hit.verse.chapter, hit.verse.number, language)}
-        <span className="ml-2 text-xs text-gold">{hit.verse.translationId === "kjv" ? "KJV" : "தமிழ் O.V."}</span>
+        <span className="ml-2 text-xs text-gold">{translationLabel(hit.verse.translationId)}</span>
       </p>
-      <p className={language === "ta" ? "tamil mt-2 text-sm" : "mt-2 text-sm"}>{highlightNodes(hit.snippet, query)}</p>
+      <p className={isTamilScript(hit.verse.translationId) ? "tamil mt-2 text-sm" : "mt-2 text-sm"}>{highlightNodes(hit.snippet, query)}</p>
     </button>
   );
 }

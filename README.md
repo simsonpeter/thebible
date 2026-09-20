@@ -10,6 +10,7 @@ Offline-first Tamil and English Bible reader. Reading works without an account. 
 | --- | --- | --- |
 | `kjv` | King James Version | Public-domain text is bundled at `bible-data/kjv/kjv.json` and imported on first launch. It is not downloaded from the internet at runtime. |
 | `bsi-ov` | Tamil Bible (Old Version) | Bundled from the per-book JSON files in [aruljohn/Bible-tamil](https://github.com/aruljohn/Bible-tamil). Labeled as classic Tamil O.V., **not** authorized BSI New Ortho. |
+| `tanglish` | Tanglish (Tamil Romanised) | Bundled from the TAMRB modules in [yesudas/all-bible-databases Tanglish](https://github.com/yesudas/all-bible-databases/tree/main/Bibles/Tamil-Bible-Database-and-Software-Modules/Tanglish). Latin-script Tamil wording, **not** authorized BSI New Ortho. |
 
 NJC Bible App never invents verses, never scrapes websites, and never presents sample or placeholder text as Scripture.
 

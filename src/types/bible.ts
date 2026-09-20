@@ -1,6 +1,7 @@
 export const TRANSLATION_IDS = {
   KJV: "kjv",
   BSI_OV: "bsi-ov",
+  TANGLISH: "tanglish",
 } as const;
 
 export type TranslationId = (typeof TRANSLATION_IDS)[keyof typeof TRANSLATION_IDS];

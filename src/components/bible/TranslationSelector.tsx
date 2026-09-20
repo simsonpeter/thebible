@@ -1,9 +1,5 @@
 import { cn } from "@/utils/misc";
-
-const OPTIONS = [
-  { id: "bsi-ov", label: "தமிழ் O.V." },
-  { id: "kjv", label: "English KJV" },
-];
+import { TRANSLATION_OPTIONS } from "@/config/translations";
 
 export function TranslationSelector({
   value,
@@ -20,7 +16,7 @@ export function TranslationSelector({
         onChange={(event) => onChange(event.target.value)}
         className="min-h-11 rounded-full border border-navy/10 bg-white px-3 text-sm font-semibold dark:border-white/10 dark:bg-white/5"
       >
-        {OPTIONS.map((option) => (
+        {TRANSLATION_OPTIONS.map((option) => (
           <option key={option.id} value={option.id}>
             {option.label}
           </option>

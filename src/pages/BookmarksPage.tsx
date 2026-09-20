@@ -22,12 +22,13 @@ export function BookmarksPage() {
 
   const categories = useMemo(() => {
     const extras = rows.map((row) => row.category).filter(Boolean);
-    return ["All", "Tamil", "English", ...new Set([...DEFAULT_BOOKMARK_CATEGORIES, ...extras])];
+    return ["All", "Tamil", "Tanglish", "English", ...new Set([...DEFAULT_BOOKMARK_CATEGORIES, ...extras])];
   }, [rows]);
 
   const visible = useMemo(() => {
     return rows.filter((row) => {
       if (filter === "Tamil") return row.translationId === "bsi-ov";
+      if (filter === "Tanglish") return row.translationId === "tanglish";
       if (filter === "English") return row.translationId === "kjv";
       if (filter === "All") return true;
       return row.category === filter;

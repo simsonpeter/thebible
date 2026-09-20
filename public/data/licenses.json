@@ -13,9 +13,15 @@
     },
     {
       "id": "bsi-ov",
-      "name": "BSI OV",
-      "license": "Copyright Bible Society of India. Not bundled.",
-      "source": "Import a legally licensed dataset. Demo placeholders only until import."
+      "name": "Tamil Bible (Old Version)",
+      "license": "Classic Tamil Old Version. Not BSI Tamil O.V. New Ortho.",
+      "source": "https://github.com/aruljohn/Bible-tamil"
+    },
+    {
+      "id": "tanglish",
+      "name": "Tanglish Bible",
+      "license": "Tamil Romanised Bible (TAMRB). Packaged from a public Bible-module collection.",
+      "source": "https://github.com/yesudas/all-bible-databases/tree/main/Bibles/Tamil-Bible-Database-and-Software-Modules/Tanglish"
     }
   ]
 }

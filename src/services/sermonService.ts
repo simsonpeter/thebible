@@ -5,6 +5,7 @@ import { formatRange } from "@/utils/reference";
 import { nowIso, upcomingSundayKey } from "@/utils/misc";
 import { sermonSyncKey } from "@/utils/mergeBackup";
 import { rememberDeleted } from "@/services/tombstoneService";
+import { translationLabel, translationUiLanguage } from "@/config/translations";
 
 export const ACTIVE_SERMON_STORAGE_KEY = "njc-active-sermon-id";
 
@@ -168,17 +169,17 @@ export function readActiveSermonId(): number | null {
   return Number.isInteger(id) ? id : null;
 }
 
-export function translationLabel(translationId: string): string {
-  return translationId === "bsi-ov" ? "Tamil O.V." : "KJV";
-}
-
-export function passageLanguage(translationId: string): "en" | "ta" {
-  return translationId === "bsi-ov" ? "ta" : "en";
-}
+export { translationLabel } from "@/config/translations";
+export { translationUiLanguage as passageLanguage } from "@/config/translations";
 
 export function formatPassageReference(passage: SermonPassageRecord): string {
-  const language = passageLanguage(passage.translationId);
-  return formatRange(passage.bookId, passage.chapter, passage.verseStart, passage.verseEnd, language);
+  return formatRange(
+    passage.bookId,
+    passage.chapter,
+    passage.verseStart,
+    passage.verseEnd,
+    translationUiLanguage(passage.translationId),
+  );
 }
 
 export function formatSermonDocument(
