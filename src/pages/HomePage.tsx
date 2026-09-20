@@ -109,6 +109,7 @@ export function HomePage() {
         {[
           { label: "READ BIBLE", to: "/bible" },
           { label: "SEARCH", to: "/search" },
+          { label: "STRONG'S", to: "/dictionary" },
           { label: `BOOKMARKS (${bookmarkCount})`, to: "/bookmarks" },
           { label: `HIGHLIGHTS (${highlightCount})`, to: "/highlights" },
           { label: `NOTES (${noteCount})`, to: "/notes" },

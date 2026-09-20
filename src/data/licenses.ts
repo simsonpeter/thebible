@@ -42,6 +42,15 @@ export const LICENSES = {
     source: bibleLicenses.tanglish.publisherText,
     year: 2019,
   },
+  strongs: {
+    name: "Strong's Dictionary in Tamil",
+    abbreviation: "Strong's",
+    license: "Public-domain Tamil Strong's wording. MIT covers the source repository packaging.",
+    licenseDetails:
+      "Hebrew and Greek Strong's definitions in Tamil from https://github.com/yesudas/strongs-dictionary-in-tamil. The 1890 Strong's dictionaries are public domain. The Tamil translation is credited to Tamil Good News Publishers / Bell Wether International (Arulappan) and was digitized by Yesudas Solomon and Mathanraj (Joshua). That repository states the work is freely given (Matthew 10:8) and is MIT-licensed. NJC Bible App bundles the MyBible TStrongs module for offline lookup. This is a study aid, not Scripture, and is not a BSI publication.",
+    source: "https://github.com/yesudas/strongs-dictionary-in-tamil",
+    year: 1890,
+  },
 };
 
 export const DEMO_PLACEHOLDER = "[Licensed Bible text required]";

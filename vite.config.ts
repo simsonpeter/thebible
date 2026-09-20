@@ -41,6 +41,7 @@ export default defineConfig({
         "bible-data/bsi-ov/bsi-ov.json",
         "bible-data/bsi-ov/sample.json",
         "bible-data/tanglish/tanglish.json",
+        "bible-data/strongs/strongs.json",
         "data/kjv-source.json",
         "data/bsi-ov.sample.json",
         "data/licenses.json",
@@ -92,7 +93,7 @@ export default defineConfig({
             handler: "CacheFirst",
             options: {
               cacheName: "njc-bible-data",
-              expiration: { maxEntries: 20, maxAgeSeconds: 60 * 60 * 24 * 365 },
+              expiration: { maxEntries: 24, maxAgeSeconds: 60 * 60 * 24 * 365 },
             },
           },
         ],

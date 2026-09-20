@@ -22,6 +22,12 @@
       "name": "Tanglish Bible",
       "license": "Tamil Romanised Bible (TAMRB). Packaged from a public Bible-module collection.",
       "source": "https://github.com/yesudas/all-bible-databases/tree/main/Bibles/Tamil-Bible-Database-and-Software-Modules/Tanglish"
+    },
+    {
+      "id": "strongs",
+      "name": "Strong's Dictionary in Tamil",
+      "license": "Public-domain Tamil Strong's wording. MIT covers the source repository packaging.",
+      "source": "https://github.com/yesudas/strongs-dictionary-in-tamil"
     }
   ]
 }

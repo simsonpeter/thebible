@@ -6,6 +6,7 @@ const links = [
   { to: "/", label: "Home" },
   { to: "/bible", label: "Bible" },
   { to: "/search", label: "Search" },
+  { to: "/dictionary", label: "Strong's" },
   { to: "/bookmarks", label: "Bookmarks" },
   { to: "/highlights", label: "Highlights" },
   { to: "/notes", label: "Notes" },

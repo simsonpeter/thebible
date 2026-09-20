@@ -317,6 +317,7 @@ export function BibleReader() {
     if (action === "sermon") setSermonOpen(true);
     if (action === "compare") changeMode("parallel");
     if (action === "search") navigate(`/search?q=${encodeURIComponent(text.slice(0, 40))}`);
+    if (action === "strongs") navigate("/dictionary");
     if (action === "image") {
       navigate("/verse-image", {
         state: { bookId, chapter, verse: range.start, text, language: verseLanguage, translationId },

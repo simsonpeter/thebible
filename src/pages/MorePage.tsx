@@ -14,6 +14,7 @@ export function MorePage() {
     { to: "/account", label: "Account sync" },
     { to: "/sermons", label: "Sunday sermons" },
     { to: "/reading-plans", label: "Reading plans" },
+    { to: "/dictionary", label: "Strong's dictionary" },
     { to: "/progress", label: "Bible progress" },
     { to: "/verse-image", label: "Verse image" },
     { to: "/import", label: "Import Bible data" },

@@ -19,6 +19,7 @@ import { VerseImagePage } from "@/pages/VerseImagePage";
 import { ImportPage } from "@/pages/ImportPage";
 import { PrivacyPage } from "@/pages/PrivacyPage";
 import { AccountPage } from "@/pages/AccountPage";
+import { DictionaryPage } from "@/pages/DictionaryPage";
 import { SettingsProvider } from "@/hooks/useSettings";
 import { ToastProvider } from "@/hooks/useToast";
 import { AuthProvider } from "@/hooks/useAuth";
@@ -66,6 +67,7 @@ export function App() {
               <Route path="/bible/:book" element={<BiblePage />} />
               <Route path="/bible/:book/:chapter" element={<BiblePage />} />
               <Route path="/search" element={<SearchPage />} />
+              <Route path="/dictionary" element={<DictionaryPage />} />
               <Route path="/saved" element={<SavedPage />} />
               <Route path="/bookmarks" element={<BookmarksPage />} />
               <Route path="/highlights" element={<HighlightsPage />} />
