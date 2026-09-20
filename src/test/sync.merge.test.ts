@@ -120,4 +120,25 @@ describe("account sync merge", () => {
     expect(merged.notes.map((row) => row.verseId)).toEqual(["kjv:john:1:1"]);
     expect(merged.planDays.filter((row) => row.completed).map((row) => row.day).sort()).toEqual([1, 2]);
   });
+
+  it("does not restore a deleted sermon from the cloud copy", () => {
+    const local = backup({
+      sermons: [],
+      tombstones: { notes: [], bookmarks: [], highlights: [], sermons: ["sermon-1"] },
+    });
+    const remote = backup({
+      sermons: [
+        {
+          syncId: "sermon-1",
+          title: "God so loved",
+          sundayDate: "2026-09-20",
+          body: "outline",
+          createdAt: "2026-09-01T00:00:00.000Z",
+          updatedAt: "2026-09-01T00:00:00.000Z",
+        },
+      ],
+    });
+    const merged = mergeUserBackups(local, remote);
+    expect(merged.sermons).toEqual([]);
+  });
 });

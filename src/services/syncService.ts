@@ -4,9 +4,8 @@ import { BIBLE_SYNC_FIELD, BIBLE_SYNC_UPDATED_FIELD } from "@/config/firebase";
 import { currentAuthUser, type AuthUser } from "@/services/authService";
 import { exportUserData, importUserData } from "@/services/backupService";
 import { getFirebaseDb } from "@/services/firebaseApp";
-import { rememberDeleted } from "@/services/tombstoneService";
 import type { UserBackupV1 } from "@/types/userData";
-import { bookmarkSyncKey, backupFingerprint, mergeUserBackups, noteSyncKey } from "@/utils/mergeBackup";
+import { backupFingerprint, mergeUserBackups } from "@/utils/mergeBackup";
 
 const SYNC_STATE_KEY = "syncState";
 
@@ -21,6 +20,7 @@ let applyingRemote = false;
 let hooksAttached = false;
 let saveTimer: number | null = null;
 let syncInFlight = false;
+let pendingSync = false;
 const listeners = new Set<(state: SyncState) => void>();
 
 function emit(state: SyncState): void {
@@ -81,15 +81,19 @@ export async function syncAccountNow(user = currentAuthUser()): Promise<SyncStat
   if (!user) {
     return saveSyncState({ lastError: "Sign in to sync across devices.", busy: false });
   }
-  if (syncInFlight) return loadSyncState();
+  if (syncInFlight) {
+    pendingSync = true;
+    return loadSyncState();
+  }
   if (typeof navigator !== "undefined" && navigator.onLine === false) {
+    pendingSync = true;
     return saveSyncState({ lastError: "Connect to the internet to sync.", busy: false });
   }
   syncInFlight = true;
   await saveSyncState({ busy: true, lastError: "" });
   try {
-    const local = await exportUserData();
     const remote = await pullCloudBackup(user);
+    const local = await exportUserData();
     const merged = mergeUserBackups(local, remote);
     if (backupFingerprint(merged) !== backupFingerprint(local)) {
       applyingRemote = true;
@@ -107,11 +111,21 @@ export async function syncAccountNow(user = currentAuthUser()): Promise<SyncStat
     return saveSyncState({ lastError: message, busy: false });
   } finally {
     syncInFlight = false;
+    if (pendingSync) {
+      pendingSync = false;
+      window.setTimeout(() => {
+        void syncAccountNow();
+      }, 50);
+    }
   }
 }
 
 export function queueAccountSync(): void {
   if (applyingRemote || !currentAuthUser()) return;
+  if (syncInFlight) {
+    pendingSync = true;
+    return;
+  }
   if (saveTimer) window.clearTimeout(saveTimer);
   saveTimer = window.setTimeout(() => {
     saveTimer = null;
@@ -137,19 +151,6 @@ export function attachSyncHooks(): void {
     table.hook("updating", () => queueAccountSync());
     table.hook("deleting", () => queueAccountSync());
   }
-  db.notes.hook("deleting", (_primKey, obj) => {
-    if (applyingRemote || !obj) return;
-    void rememberDeleted("notes", noteSyncKey({ verseId: obj.verseId, createdAt: obj.createdAt ?? "" }));
-    void rememberDeleted("notes", obj.verseId);
-  });
-  db.bookmarks.hook("deleting", (_primKey, obj) => {
-    if (applyingRemote || !obj) return;
-    void rememberDeleted("bookmarks", bookmarkSyncKey(obj));
-  });
-  db.highlights.hook("deleting", (_primKey, obj) => {
-    if (applyingRemote || !obj) return;
-    void rememberDeleted("highlights", obj.verseId);
-  });
   window.addEventListener("online", () => {
     if (currentAuthUser()) void syncAccountNow();
   });

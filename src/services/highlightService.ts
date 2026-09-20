@@ -1,6 +1,7 @@
 import { db } from "@/db";
 import type { HighlightColor, HighlightRecord } from "@/types/userData";
 import { nowIso } from "@/utils/misc";
+import { rememberDeleted } from "@/services/tombstoneService";
 
 export async function listHighlights(): Promise<HighlightRecord[]> {
   return db.highlights.orderBy("createdAt").reverse().toArray();
@@ -24,6 +25,7 @@ export async function setHighlight(record: Omit<HighlightRecord, "createdAt"> & 
 }
 
 export async function removeHighlight(verseId: string): Promise<void> {
+  await rememberDeleted("highlights", verseId);
   await db.highlights.delete(verseId);
 }
 

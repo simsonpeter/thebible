@@ -3,6 +3,8 @@ import type { VerseRecord } from "@/types/bible";
 import type { SermonPassageRecord, SermonRecord } from "@/types/userData";
 import { formatRange } from "@/utils/reference";
 import { nowIso, upcomingSundayKey } from "@/utils/misc";
+import { sermonSyncKey } from "@/utils/mergeBackup";
+import { rememberDeleted } from "@/services/tombstoneService";
 
 export const ACTIVE_SERMON_STORAGE_KEY = "njc-active-sermon-id";
 
@@ -50,14 +52,15 @@ export async function updateSermon(
 
 export async function deleteSermon(id: number): Promise<void> {
   const sermon = await db.sermons.get(id);
+  if (sermon) {
+    await rememberDeleted("sermons", sermonSyncKey(sermon));
+    if (sermon.syncId) await rememberDeleted("sermons", sermon.syncId);
+    if (sermon.id != null) await rememberDeleted("sermons", `id:${sermon.id}`);
+  }
   await db.transaction("rw", [db.sermons, db.sermonPassages], async () => {
     await db.sermonPassages.where("sermonId").equals(id).delete();
     await db.sermons.delete(id);
   });
-  if (sermon?.syncId) {
-    const { rememberDeleted } = await import("@/services/tombstoneService");
-    await rememberDeleted("sermons", sermon.syncId);
-  }
 }
 
 export async function addSermonPassage(

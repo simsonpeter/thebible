@@ -71,7 +71,15 @@ function mergeByKey<T>(
 }
 
 function sermonKey(row: SermonRecord): string {
+  return sermonSyncKey(row);
+}
+
+export function sermonSyncKey(row: Pick<SermonRecord, "syncId" | "title" | "sundayDate" | "createdAt">): string {
   return row.syncId || `${row.title}:${row.sundayDate}:${row.createdAt}`;
+}
+
+function sermonTombstoneKeys(row: SermonRecord): string[] {
+  return [sermonSyncKey(row), row.syncId, row.id != null ? `id:${row.id}` : ""].filter(Boolean) as string[];
 }
 
 export function mergeUserBackups(local: UserBackupV1, remote: UserBackupV1 | null): UserBackupV1 {
@@ -131,7 +139,7 @@ export function mergeUserBackups(local: UserBackupV1, remote: UserBackupV1 | nul
   const localSermons = local.sermons ?? [];
   const remoteSermons = remote.sermons ?? [];
   const sermons = mergeByKey(localSermons, remoteSermons, sermonKey, (row) => row.updatedAt || row.createdAt).filter(
-    (row) => !tombstones.sermons.includes(sermonKey(row)),
+    (row) => !sermonTombstoneKeys(row).some((key) => tombstones.sermons.includes(key)),
   );
   const keptSermonKeys = new Set(sermons.map(sermonKey));
   const sermonPassages = [...(local.sermonPassages ?? []), ...(remote.sermonPassages ?? [])].filter((row) => {

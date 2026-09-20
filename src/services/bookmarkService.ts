@@ -1,6 +1,8 @@
 import { db } from "@/db";
 import type { BookmarkCategory, BookmarkRecord } from "@/types/userData";
 import { nowIso } from "@/utils/misc";
+import { bookmarkSyncKey } from "@/utils/mergeBackup";
+import { rememberDeleted } from "@/services/tombstoneService";
 
 export async function listBookmarks(): Promise<BookmarkRecord[]> {
   const rows = await db.bookmarks.orderBy("createdAt").reverse().toArray();
@@ -22,6 +24,8 @@ export async function updateBookmark(
 }
 
 export async function deleteBookmark(id: number): Promise<void> {
+  const row = await db.bookmarks.get(id);
+  if (row) await rememberDeleted("bookmarks", bookmarkSyncKey(row));
   await db.bookmarks.delete(id);
 }
 
