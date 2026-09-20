@@ -10,7 +10,9 @@ import { useToast } from "@/hooks/useToast";
 import { useNavigate } from "react-router-dom";
 import { APP_NAME, APP_VERSION } from "@/data/licenses";
 import { bsiNoticeFromConfig } from "@/config/bibleLicenses";
-import { TRANSLATION_OPTIONS, toggleParallelTranslation } from "@/config/translations";
+import { TranslationLanguagePicker } from "@/components/bible/TranslationSelector";
+import { toggleParallelTranslation } from "@/config/translations";
+import type { TranslationId } from "@/types/bible";
 import { useAuth } from "@/hooks/useAuth";
 
 export function SettingsPage() {
@@ -119,51 +121,53 @@ export function SettingsPage() {
       </SettingsSection>
 
       <SettingsSection title="Bible">
-        <Row label="Default Bible">
-          {TRANSLATION_OPTIONS.map((option) => (
-            <Chip
-              key={option.id}
-              active={settings.defaultTranslation === option.id}
-              onClick={() => void update({ defaultTranslation: option.id })}
-            >
-              {option.label}
-            </Chip>
-          ))}
-        </Row>
-        <Row label="Parallel mode">
-          <Chip active={settings.readingMode === "single"} onClick={() => void update({ readingMode: "single" })}>
-            Single
-          </Chip>
-          <Chip active={settings.readingMode === "parallel"} onClick={() => void update({ readingMode: "parallel" })}>
-            Parallel
-          </Chip>
-        </Row>
-        <Row label="Parallel Bibles">
-          {TRANSLATION_OPTIONS.map((option) => (
-            <Chip
-              key={option.id}
-              active={settings.parallelTranslations.includes(option.id)}
-              onClick={() => {
-                const next = toggleParallelTranslation(settings.parallelTranslations, option.id);
+        <div className="grid gap-5 p-4">
+          <div>
+            <p className="mb-3 text-sm font-medium">Default Bible</p>
+            <TranslationLanguagePicker
+              selected={settings.defaultTranslation}
+              onSelect={(id) => void update({ defaultTranslation: id as TranslationId })}
+              order={settings.parallelOrder}
+            />
+          </div>
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <p className="text-sm font-medium">Parallel mode</p>
+            <div className="flex flex-wrap gap-2">
+              <Chip active={settings.readingMode === "single"} onClick={() => void update({ readingMode: "single" })}>
+                Single
+              </Chip>
+              <Chip active={settings.readingMode === "parallel"} onClick={() => void update({ readingMode: "parallel" })}>
+                Parallel
+              </Chip>
+            </div>
+          </div>
+          <div>
+            <p className="mb-3 text-sm font-medium">Parallel Bibles</p>
+            <TranslationLanguagePicker
+              selected={settings.parallelTranslations}
+              onSelect={(id) => {
+                const next = toggleParallelTranslation(settings.parallelTranslations, id);
                 if (next.length === settings.parallelTranslations.length) {
                   push("Keep at least two Bibles in parallel", "info");
                   return;
                 }
                 void update({ parallelTranslations: next });
               }}
-            >
-              {option.label}
-            </Chip>
-          ))}
-        </Row>
-        <Row label="Parallel order">
-          <Chip active={settings.parallelOrder === "tamil-first"} onClick={() => void update({ parallelOrder: "tamil-first" })}>
-            Tamil first
-          </Chip>
-          <Chip active={settings.parallelOrder === "english-first"} onClick={() => void update({ parallelOrder: "english-first" })}>
-            English first
-          </Chip>
-        </Row>
+              order={settings.parallelOrder}
+            />
+          </div>
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <p className="text-sm font-medium">Parallel order</p>
+            <div className="flex flex-wrap gap-2">
+              <Chip active={settings.parallelOrder === "tamil-first"} onClick={() => void update({ parallelOrder: "tamil-first" })}>
+                Tamil first
+              </Chip>
+              <Chip active={settings.parallelOrder === "english-first"} onClick={() => void update({ parallelOrder: "english-first" })}>
+                English first
+              </Chip>
+            </div>
+          </div>
+        </div>
         <Row label="Verse numbers">
           <Chip active={settings.showVerseNumbers} onClick={() => void update({ showVerseNumbers: true })}>
             Show

@@ -5,14 +5,15 @@ import { Page } from "@/components/layout/Page";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
 import { OfflineBadge } from "@/components/ui/OfflineBadge";
-import { ModeToggle } from "@/components/bible/TranslationSelector";
+import { ModeToggle, TranslationLanguagePicker } from "@/components/bible/TranslationSelector";
 import { useSettings } from "@/hooks/useSettings";
 import { useInstallPrompt } from "@/hooks/useInstallPrompt";
 import { listRecentHistory } from "@/services/historyService";
 import { listPlans, planProgress } from "@/services/planService";
 import { formatReference } from "@/utils/reference";
 import { cn } from "@/utils/misc";
-import { isTamilScript, translationUiLanguage, TRANSLATION_OPTIONS } from "@/config/translations";
+import { isTamilScript, translationUiLanguage } from "@/config/translations";
+import type { TranslationId } from "@/types/bible";
 import type { ReadingHistoryRecord } from "@/types/userData";
 import { db } from "@/db";
 
@@ -55,17 +56,12 @@ export function HomePage() {
         ) : null}
       </div>
 
-      <div className="mb-4 flex flex-wrap items-center gap-2">
-        {TRANSLATION_OPTIONS.map((option) => (
-          <button
-            key={option.id}
-            type="button"
-            className={`min-h-11 rounded-full px-3 text-sm ${settings.defaultTranslation === option.id ? "bg-navy text-white" : "bg-paper-2 dark:bg-white/5"}`}
-            onClick={() => void update({ defaultTranslation: option.id })}
-          >
-            {option.label}
-          </button>
-        ))}
+      <div className="mb-4 grid gap-3">
+        <TranslationLanguagePicker
+          selected={settings.defaultTranslation}
+          onSelect={(id) => void update({ defaultTranslation: id as TranslationId })}
+          order={settings.parallelOrder}
+        />
         <ModeToggle
           value={settings.readingMode}
           onChange={(mode) => void update({ readingMode: mode })}

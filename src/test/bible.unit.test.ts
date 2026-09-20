@@ -5,7 +5,7 @@ import { dailyIndex } from "@/services/dailyVerse";
 import { formatParallelRangeShare, formatParallelShare, formatVerseShare, formatVersesShare } from "@/services/shareService";
 import { validateBibleImport } from "@/services/bibleValidation";
 import { BOOK_CATALOG, bookDisplayName, compareByBibleOrder } from "@/data/books";
-import { orderParallelTranslations, resolveParallelSelection, toggleParallelTranslation } from "@/config/translations";
+import { orderParallelTranslations, resolveParallelSelection, toggleParallelTranslation, translationsByLanguage } from "@/config/translations";
 import { buildPlanDays, parseNjcReference } from "@/data/readingPlans";
 import type { BibleImportFile } from "@/types/bible";
 
@@ -67,6 +67,15 @@ describe("parallel translations", () => {
       "thngv",
       "tanglish",
     ]);
+  });
+
+  it("groups Bibles by language", () => {
+    expect(translationsByLanguage().map((group) => [group.id, group.options.map((option) => option.id)])).toEqual([
+      ["ta", ["bsi-ov", "thngv"]],
+      ["tl", ["tanglish"]],
+      ["en", ["kjv"]],
+    ]);
+    expect(translationsByLanguage("english-first").map((group) => group.id)).toEqual(["en", "ta", "tl"]);
   });
 });
 

@@ -1,9 +1,36 @@
+export type TranslationLanguage = "ta" | "tl" | "en";
+
 export const TRANSLATION_OPTIONS = [
-  { id: "bsi-ov", label: "தமிழ் O.V." },
-  { id: "thngv", label: "THNGV" },
-  { id: "tanglish", label: "Tanglish" },
-  { id: "kjv", label: "English KJV" },
+  { id: "bsi-ov", label: "தமிழ் O.V.", language: "ta" },
+  { id: "thngv", label: "THNGV", language: "ta" },
+  { id: "tanglish", label: "Tanglish", language: "tl" },
+  { id: "kjv", label: "English KJV", language: "en" },
 ] as const;
+
+export const TRANSLATION_LANGUAGE_GROUPS = [
+  { id: "ta", label: "Tamil · தமிழ்" },
+  { id: "tl", label: "Tanglish" },
+  { id: "en", label: "English" },
+] as const;
+
+export function translationLanguage(translationId: string): TranslationLanguage {
+  const option = TRANSLATION_OPTIONS.find((item) => item.id === translationId);
+  if (option) return option.language;
+  return isTamilScript(translationId) ? "ta" : "en";
+}
+
+export function translationsByLanguage(
+  order: "tamil-first" | "english-first" = "tamil-first",
+): Array<{ id: TranslationLanguage; label: string; options: Array<(typeof TRANSLATION_OPTIONS)[number]> }> {
+  const groups = TRANSLATION_LANGUAGE_GROUPS.map((group) => ({
+    ...group,
+    options: TRANSLATION_OPTIONS.filter((option) => option.language === group.id),
+  }));
+  if (order === "english-first") {
+    return [...groups.filter((group) => group.id === "en"), ...groups.filter((group) => group.id !== "en")];
+  }
+  return groups;
+}
 
 export function isTamilScript(translationId: string): boolean {
   return translationId === "bsi-ov" || translationId === "thngv";
@@ -47,15 +74,8 @@ export function orderParallelTranslations(
   ids: readonly string[],
   order: "tamil-first" | "english-first" = "tamil-first",
 ): string[] {
-  const catalog = TRANSLATION_OPTIONS.map((option) => option.id as string);
+  const catalog = translationsByLanguage(order).flatMap((group) => group.options.map((option) => option.id as string));
   const known = catalog.filter((id) => ids.includes(id));
   const extra = ids.filter((id) => !known.includes(id));
-  const ordered = [...known, ...extra];
-  if (order === "english-first") {
-    return [...ordered.filter((id) => id === "kjv"), ...ordered.filter((id) => id !== "kjv")];
-  }
-  if (order === "tamil-first") {
-    return [...ordered.filter((id) => id === "bsi-ov"), ...ordered.filter((id) => id !== "bsi-ov")];
-  }
-  return ordered;
+  return [...known, ...extra];
 }

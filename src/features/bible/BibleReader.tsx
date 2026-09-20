@@ -6,7 +6,7 @@ import { DEMO_BANNER } from "@/data/licenses";
 import { BookSelector } from "@/components/bible/BookSelector";
 import { ChapterSelector } from "@/components/bible/ChapterSelector";
 import { BibleNavigator } from "@/components/bible/BibleNavigator";
-import { ModeToggle, TranslationSelector } from "@/components/bible/TranslationSelector";
+import { ModeToggle, TranslationLanguagePicker } from "@/components/bible/TranslationSelector";
 import { ParallelVerseRow } from "@/components/bible/ParallelVerseRow";
 import { VerseContextMenu } from "@/components/bible/VerseContextMenu";
 import { VerseRow } from "@/components/bible/VerseRow";
@@ -16,7 +16,7 @@ import { db } from "@/db";
 import { useSettings } from "@/hooks/useSettings";
 import { useToast } from "@/hooks/useToast";
 import { useWakeLock } from "@/hooks/useWakeLock";
-import { TRANSLATION_OPTIONS, isTamilScript, toggleParallelTranslation, translationUiLanguage } from "@/config/translations";
+import { isTamilScript, toggleParallelTranslation, translationUiLanguage } from "@/config/translations";
 import {
   adjacentChapter,
   getChapterVerses,
@@ -428,47 +428,40 @@ export function BibleReader() {
               ⋮
             </button>
           </div>
-          <div className="flex flex-wrap items-center gap-2">
+          <div className="grid gap-3">
             {mode === "parallel" ? (
-              <div className="flex flex-wrap gap-2" aria-label="Parallel Bibles">
-                {TRANSLATION_OPTIONS.map((option) => {
-                  const active = settings.parallelTranslations.includes(option.id);
-                  return (
-                    <button
-                      key={option.id}
-                      type="button"
-                      className={cn(
-                        "min-h-11 rounded-full px-3 text-sm",
-                        active ? "bg-navy text-white dark:bg-gold dark:text-navy-deep" : "bg-paper-2 dark:bg-white/10",
-                      )}
-                      onClick={() => toggleCompare(option.id)}
-                    >
-                      {option.label}
-                    </button>
-                  );
-                })}
-              </div>
+              <TranslationLanguagePicker
+                selected={settings.parallelTranslations}
+                onSelect={toggleCompare}
+                order={settings.parallelOrder}
+              />
             ) : (
-              <TranslationSelector value={translationId} onChange={changeTranslation} />
+              <TranslationLanguagePicker
+                selected={translationId}
+                onSelect={changeTranslation}
+                order={settings.parallelOrder}
+              />
             )}
-            <BookSelector value={bookId} language={language} onChange={changeBook} />
-            <ChapterSelector bookId={bookId} value={chapter} language={language} onChange={changeChapter} />
-            <ModeToggle value={mode} onChange={changeMode} />
-            <div className="inline-flex rounded-full bg-navy/8 p-1 dark:bg-white/10" role="group" aria-label="Font size">
-              <button type="button" className="min-h-10 min-w-10 text-sm" aria-label="Decrease font size" onClick={() => bumpFont(-1)}>
-                A-
-              </button>
-              <button
-                type="button"
-                className="min-h-10 min-w-10 text-sm"
-                aria-label="Medium font size"
-                onClick={() => void update({ fontPreset: "medium", ...FONT_PRESETS.medium })}
-              >
-                A
-              </button>
-              <button type="button" className="min-h-10 min-w-10 text-sm" aria-label="Increase font size" onClick={() => bumpFont(1)}>
-                A+
-              </button>
+            <div className="flex flex-wrap items-center gap-2">
+              <BookSelector value={bookId} language={language} onChange={changeBook} />
+              <ChapterSelector bookId={bookId} value={chapter} language={language} onChange={changeChapter} />
+              <ModeToggle value={mode} onChange={changeMode} />
+              <div className="inline-flex rounded-full bg-navy/8 p-1 dark:bg-white/10" role="group" aria-label="Font size">
+                <button type="button" className="min-h-10 min-w-10 text-sm" aria-label="Decrease font size" onClick={() => bumpFont(-1)}>
+                  A-
+                </button>
+                <button
+                  type="button"
+                  className="min-h-10 min-w-10 text-sm"
+                  aria-label="Medium font size"
+                  onClick={() => void update({ fontPreset: "medium", ...FONT_PRESETS.medium })}
+                >
+                  A
+                </button>
+                <button type="button" className="min-h-10 min-w-10 text-sm" aria-label="Increase font size" onClick={() => bumpFont(1)}>
+                  A+
+                </button>
+              </div>
             </div>
           </div>
         </header>
