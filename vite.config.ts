@@ -43,6 +43,7 @@ export default defineConfig({
         "bible-data/tanglish/tanglish.json",
         "bible-data/thngv/thngv.json",
         "bible-data/strongs/strongs.json",
+        "bible-data/commentary/commentary.json",
         "data/kjv-source.json",
         "data/bsi-ov.sample.json",
         "data/licenses.json",
@@ -95,6 +96,15 @@ export default defineConfig({
             options: {
               cacheName: "njc-bible-data",
               expiration: { maxEntries: 24, maxAgeSeconds: 60 * 60 * 24 * 365 },
+            },
+          },
+          {
+            urlPattern: /good-news-brief-commentary/i,
+            handler: "CacheFirst",
+            options: {
+              cacheName: "njc-commentary-pages",
+              expiration: { maxEntries: 800, maxAgeSeconds: 60 * 60 * 24 * 365 },
+              cacheableResponse: { statuses: [0, 200] },
             },
           },
         ],

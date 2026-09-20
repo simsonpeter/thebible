@@ -34,6 +34,12 @@
       "name": "Strong Dictionary",
       "license": "Public-domain Tamil Strong's wording. MIT covers the source repository packaging.",
       "source": "https://github.com/yesudas/strongs-dictionary-in-tamil"
+    },
+    {
+      "id": "commentary",
+      "name": "Good News Brief Commentary",
+      "license": "Public domain per Matthew 10:8. MIT covers the source repository packaging.",
+      "source": "https://github.com/yesudas/good-news-brief-commentary"
     }
   ]
 }

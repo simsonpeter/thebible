@@ -61,6 +61,15 @@ export const LICENSES = {
     source: "https://github.com/yesudas/strongs-dictionary-in-tamil",
     year: 1890,
   },
+  commentary: {
+    name: "Good News Brief Commentary",
+    abbreviation: "வேதாகமம் சுருக்கவுரை",
+    license: "Public domain per Matthew 10:8. MIT covers the source repository packaging.",
+    licenseDetails:
+      "Tamil brief commentary (வேதாகமம் சுருக்கவுரை) from https://github.com/yesudas/good-news-brief-commentary. Published by Tamil Good News Publishers / Bell Wether International (Arulappan) and hosted by Word of God Team. That repository states the work is public domain as per Matthew 10:8 and is MIT-licensed for packaging. NJC Bible App opens the original page scans by book. This is a study aid, not Scripture, and is not a BSI publication.",
+    source: "https://github.com/yesudas/good-news-brief-commentary",
+    year: 2025,
+  },
 };
 
 export const DEMO_PLACEHOLDER = "[Licensed Bible text required]";

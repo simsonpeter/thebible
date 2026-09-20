@@ -14,6 +14,7 @@
     "prepare:tanglish": "node scripts/prepare-tanglish.mjs",
     "prepare:thngv": "node scripts/prepare-thngv.mjs",
     "prepare:strongs": "python scripts/prepare-strongs.py",
+    "prepare:commentary": "python scripts/prepare-commentary.py",
     "apk": "bubblewrap update --manifest android-twa && bubblewrap build --skipPwaValidation --manifest android-twa"
   },
   "dependencies": {

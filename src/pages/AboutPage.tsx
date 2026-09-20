@@ -30,6 +30,10 @@ export function AboutPage() {
           <h3 className="font-semibold">{LICENSES.strongs.name}</h3>
           <p className="mt-2 whitespace-pre-line text-muted">{LICENSES.strongs.licenseDetails}</p>
         </article>
+        <article className="rounded-3xl bg-white/80 p-4 dark:bg-white/5">
+          <h3 className="font-semibold">{LICENSES.commentary.name}</h3>
+          <p className="mt-2 whitespace-pre-line text-muted">{LICENSES.commentary.licenseDetails}</p>
+        </article>
         {translations.map((translation) => (
           <article key={translation.id} className="rounded-3xl bg-white/80 p-4 dark:bg-white/5">
             <h3 className="font-semibold">

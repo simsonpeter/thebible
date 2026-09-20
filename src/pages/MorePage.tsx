@@ -15,6 +15,7 @@ export function MorePage() {
     { to: "/sermons", label: "Sunday sermons" },
     { to: "/reading-plans", label: "Reading plans" },
     { to: "/dictionary", label: "Strong Dictionary", subtitle: "Hebrew/Greek" },
+    { to: "/commentary", label: "Brief Commentary", subtitle: "வேதாகமம் சுருக்கவுரை" },
     { to: "/progress", label: "Bible progress" },
     { to: "/verse-image", label: "Verse image" },
     { to: "/import", label: "Import Bible data" },
