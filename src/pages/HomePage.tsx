@@ -100,6 +100,35 @@ export function HomePage() {
         </Button>
       </section>
 
+      <button
+        type="button"
+        className="mb-4 w-full rounded-3xl bg-[#12263A] p-5 text-left text-white dark:bg-[#1d3b5a]"
+        onClick={() => navigate(`/reading-plans/${planInfo.id}`)}
+      >
+        <p className="text-xs tracking-[0.25em] text-[#e8d5a3] uppercase">Reading Plan</p>
+        <h3 className="mt-2 text-2xl font-semibold text-white">{planInfo.name}</h3>
+        <p className="mt-1 text-sm text-white/80">
+          Day {planInfo.day} / {planInfo.total}
+        </p>
+      </button>
+
+      <section className="mb-4">
+        <div className="mb-3 flex items-center justify-between">
+          <h2 className="font-semibold">Recently read</h2>
+        </div>
+        <div className="grid gap-2">
+          {recent.length === 0 ? <p className="text-sm text-muted">No recent chapters yet.</p> : null}
+          {recent.map((item) => (
+            <Card
+              key={`${item.bookId}-${item.chapter}-${item.openedAt}`}
+              onClick={() => navigate(`/bible/${item.bookId}/${item.chapter}`)}
+            >
+              {formatReference(item.bookId, item.chapter, undefined, item.translationId === "bsi-ov" ? "ta" : "en")}
+            </Card>
+          ))}
+        </div>
+      </section>
+
       <Card className="mb-4" onClick={() => navigate("/sermons")}>
         <p className="text-xs tracking-[0.25em] text-gold uppercase">Sunday sermon</p>
         <h2 className="mt-2 font-semibold">Prepare this week&apos;s notes</h2>
@@ -123,35 +152,6 @@ export function HomePage() {
           </Card>
         ))}
       </div>
-
-      <button
-        type="button"
-        className="mb-4 w-full rounded-3xl bg-[#12263A] p-5 text-left text-white dark:bg-[#1d3b5a]"
-        onClick={() => navigate(`/reading-plans/${planInfo.id}`)}
-      >
-        <p className="text-xs tracking-[0.25em] text-[#e8d5a3] uppercase">Reading Plan</p>
-        <h3 className="mt-2 text-2xl font-semibold text-white">{planInfo.name}</h3>
-        <p className="mt-1 text-sm text-white/80">
-          Day {planInfo.day} / {planInfo.total}
-        </p>
-      </button>
-
-      <section>
-        <div className="mb-3 flex items-center justify-between">
-          <h2 className="font-semibold">Recently read</h2>
-        </div>
-        <div className="grid gap-2">
-          {recent.length === 0 ? <p className="text-sm text-muted">No recent chapters yet.</p> : null}
-          {recent.map((item) => (
-            <Card
-              key={`${item.bookId}-${item.chapter}-${item.openedAt}`}
-              onClick={() => navigate(`/bible/${item.bookId}/${item.chapter}`)}
-            >
-              {formatReference(item.bookId, item.chapter, undefined, item.translationId === "bsi-ov" ? "ta" : "en")}
-            </Card>
-          ))}
-        </div>
-      </section>
     </Page>
   );
 }
