@@ -428,15 +428,17 @@ export function BibleReader() {
               ⋮
             </button>
           </div>
-          <div className="grid gap-3">
+          <div className="grid gap-2">
             {mode === "parallel" ? (
               <TranslationLanguagePicker
+                compact
                 selected={settings.parallelTranslations}
                 onSelect={toggleCompare}
                 order={settings.parallelOrder}
               />
             ) : (
               <TranslationLanguagePicker
+                compact
                 selected={translationId}
                 onSelect={changeTranslation}
                 order={settings.parallelOrder}

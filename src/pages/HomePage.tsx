@@ -56,8 +56,9 @@ export function HomePage() {
         ) : null}
       </div>
 
-      <div className="mb-4 grid gap-3">
+      <div className="mb-4 grid gap-2">
         <TranslationLanguagePicker
+          compact
           selected={settings.defaultTranslation}
           onSelect={(id) => void update({ defaultTranslation: id as TranslationId })}
           order={settings.parallelOrder}
