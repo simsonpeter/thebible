@@ -93,7 +93,7 @@ export function HomePage() {
             { label: "READ BIBLE", to: "/bible" },
             { label: "SEARCH", to: "/search" },
             { label: "Strong Dictionary", subtitle: "Hebrew/Greek", to: "/dictionary" },
-            { label: "Brief Commentary", subtitle: "வேதாகமம் சுருக்கவுரை", to: "/commentary" },
+            { label: "Commentary", subtitle: "Brief + full Tamil விரிவுரை", to: "/commentary" },
             { label: `BOOKMARKS (${bookmarkCount})`, to: "/bookmarks" },
             { label: `HIGHLIGHTS (${highlightCount})`, to: "/highlights" },
             { label: `NOTES (${noteCount})`, to: "/notes" },

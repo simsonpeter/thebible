@@ -52,7 +52,9 @@ export function App() {
               <Route path="/search" element={<SearchPage />} />
               <Route path="/dictionary" element={<DictionaryPage />} />
               <Route path="/commentary" element={<CommentaryPage />} />
-              <Route path="/commentary/:book" element={<CommentaryPage />} />
+              <Route path="/commentary/:edition" element={<CommentaryPage />} />
+              <Route path="/commentary/:edition/:book" element={<CommentaryPage />} />
+              <Route path="/commentary/:edition/:book/:chapter" element={<CommentaryPage />} />
               <Route path="/saved" element={<SavedPage />} />
               <Route path="/bookmarks" element={<BookmarksPage />} />
               <Route path="/highlights" element={<HighlightsPage />} />

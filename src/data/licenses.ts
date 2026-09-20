@@ -80,6 +80,15 @@ export const LICENSES = {
     source: "https://github.com/yesudas/good-news-brief-commentary",
     year: 2025,
   },
+  fullCommentary: {
+    name: "Good News Tamil Bible Commentary",
+    abbreviation: "வேதாகமம் விரிவுரை",
+    license: "Public domain per Matthew 10:8. MIT covers the source repository packaging.",
+    licenseDetails:
+      "Tamil full commentary (வேதாகமம் விரிவுரை) from https://github.com/yesudas/good-news-tamil-bible-commentary. Published by Tamil Good News Publishers / Bell Wether International (Arulappan) and hosted by Word of God Team. That repository states the work is public domain as per Matthew 10:8 and is MIT-licensed for packaging. NJC Bible App opens the original chapter scans by book. This is a study aid, not Scripture, and is not a BSI publication.",
+    source: "https://github.com/yesudas/good-news-tamil-bible-commentary",
+    year: 2025,
+  },
 };
 
 export const DEMO_PLACEHOLDER = "[Licensed Bible text required]";

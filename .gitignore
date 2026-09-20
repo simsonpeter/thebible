@@ -17,6 +17,7 @@ tmp-strongs
 tmp-thngv
 tmp-sv
 tmp-commentary
+tmp-full-commentary
 
 # Android / Bubblewrap
 android-twa/.gradle

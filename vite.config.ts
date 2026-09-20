@@ -45,6 +45,7 @@ export default defineConfig({
         "bible-data/sv/sv.json",
         "bible-data/strongs/strongs.json",
         "bible-data/commentary/commentary.json",
+        "bible-data/commentary/full-commentary.json",
         "data/kjv-source.json",
         "data/bsi-ov.sample.json",
         "data/licenses.json",
@@ -100,11 +101,11 @@ export default defineConfig({
             },
           },
           {
-            urlPattern: /good-news-brief-commentary/i,
+            urlPattern: /good-news-(brief|tamil-bible)-commentary/i,
             handler: "CacheFirst",
             options: {
               cacheName: "njc-commentary-pages",
-              expiration: { maxEntries: 800, maxAgeSeconds: 60 * 60 * 24 * 365 },
+              expiration: { maxEntries: 2500, maxAgeSeconds: 60 * 60 * 24 * 365 },
               cacheableResponse: { statuses: [0, 200] },
             },
           },

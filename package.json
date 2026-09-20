@@ -16,6 +16,7 @@
     "prepare:sv": "node scripts/prepare-sv.mjs",
     "prepare:strongs": "python scripts/prepare-strongs.py",
     "prepare:commentary": "python scripts/prepare-commentary.py",
+    "prepare:full-commentary": "python scripts/prepare-full-commentary.py",
     "apk": "bubblewrap update --manifest android-twa && bubblewrap build --skipPwaValidation --manifest android-twa"
   },
   "dependencies": {

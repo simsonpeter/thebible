@@ -11,7 +11,7 @@ const actions = [
   { id: "compare", label: "Compare" },
   { id: "search", label: "Search" },
   { id: "strongs", label: "Strong Dictionary" },
-  { id: "commentary", label: "Brief Commentary" },
+  { id: "commentary", label: "Commentary" },
   { id: "image", label: "Verse Image" },
 ] as const;
 

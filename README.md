@@ -20,6 +20,7 @@ Offline-first Tamil and English Bible reader. Reading works without an account. 
 | --- | --- | --- |
 | Strong's | ஸ்ட்ராங்க்ஸ் அகராதி | Bundled from [yesudas/strongs-dictionary-in-tamil](https://github.com/yesudas/strongs-dictionary-in-tamil). Offline Hebrew and Greek Strong's lookup in Tamil. A study aid, not Scripture. |
 | Brief commentary | வேதாகமம் சுருக்கவுரை | Book list from [yesudas/good-news-brief-commentary](https://github.com/yesudas/good-news-brief-commentary). Public-domain Good News Tamil brief commentary page scans. A study aid, not Scripture. |
+| Full commentary | வேதாகமம் விரிவுரை | Chapter catalog from [yesudas/good-news-tamil-bible-commentary](https://github.com/yesudas/good-news-tamil-bible-commentary). Public-domain Good News Tamil full commentary page scans. A study aid, not Scripture. |
 
 NJC Bible App never invents verses, never scrapes websites, and never presents sample or placeholder text as Scripture.
 

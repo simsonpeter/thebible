@@ -46,6 +46,12 @@
       "name": "Good News Brief Commentary",
       "license": "Public domain per Matthew 10:8. MIT covers the source repository packaging.",
       "source": "https://github.com/yesudas/good-news-brief-commentary"
+    },
+    {
+      "id": "full-commentary",
+      "name": "Good News Tamil Bible Commentary",
+      "license": "Public domain per Matthew 10:8. MIT covers the source repository packaging.",
+      "source": "https://github.com/yesudas/good-news-tamil-bible-commentary"
     }
   ]
 }
