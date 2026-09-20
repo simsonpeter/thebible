@@ -16,7 +16,7 @@ import { db } from "@/db";
 import { useSettings } from "@/hooks/useSettings";
 import { useToast } from "@/hooks/useToast";
 import { useWakeLock } from "@/hooks/useWakeLock";
-import { translationUiLanguage } from "@/config/translations";
+import { TRANSLATION_OPTIONS, isTamilScript, toggleParallelTranslation, translationUiLanguage } from "@/config/translations";
 import {
   adjacentChapter,
   getChapterVerses,
@@ -107,7 +107,7 @@ export function BibleReader() {
       setMissing(false);
       setLoaded(false);
       if (mode === "parallel") {
-        const ids = await listParallelTranslationIds(settings.parallelOrder);
+        const ids = await listParallelTranslationIds(settings.parallelOrder, settings.parallelTranslations);
         const nextPairs = await getParallelVerses(bookId, chapter, ids);
         if (!cancelled) {
           setParallelIds(ids);
@@ -135,7 +135,17 @@ export function BibleReader() {
     return () => {
       cancelled = true;
     };
-  }, [bookId, chapter, translationId, mode, verseParam, settings.parallelOrder, settings.rememberPosition, update]);
+  }, [
+    bookId,
+    chapter,
+    translationId,
+    mode,
+    verseParam,
+    settings.parallelOrder,
+    settings.parallelTranslations,
+    settings.rememberPosition,
+    update,
+  ]);
 
   useEffect(() => {
     if (!verseParam) return;
@@ -228,6 +238,15 @@ export function BibleReader() {
     paramsObj.set("translation", id);
     setSearchParams(paramsObj);
     void update({ defaultTranslation: id as typeof settings.defaultTranslation });
+  }
+
+  function toggleCompare(id: string) {
+    const next = toggleParallelTranslation(settings.parallelTranslations, id);
+    if (next.length === settings.parallelTranslations.length && next.every((item, index) => item === settings.parallelTranslations[index])) {
+      push("Keep at least two Bibles in parallel", "info");
+      return;
+    }
+    void update({ parallelTranslations: next });
   }
 
   function changeMode(next: "single" | "parallel") {
@@ -373,7 +392,9 @@ export function BibleReader() {
     push(total > 1 ? `${total} verses added to sermon` : "Verse added to sermon", "success");
   }
 
-  const language = translationUiLanguage(translationId);
+  const language = translationUiLanguage(
+    mode === "parallel" ? (parallelIds.find((id) => isTamilScript(id)) ?? parallelIds[0] ?? translationId) : translationId,
+  );
   const empty =
     loaded &&
     (mode === "single"
@@ -407,7 +428,28 @@ export function BibleReader() {
             </button>
           </div>
           <div className="flex flex-wrap items-center gap-2">
-            <TranslationSelector value={translationId} onChange={changeTranslation} />
+            {mode === "parallel" ? (
+              <div className="flex flex-wrap gap-2" aria-label="Parallel Bibles">
+                {TRANSLATION_OPTIONS.map((option) => {
+                  const active = settings.parallelTranslations.includes(option.id);
+                  return (
+                    <button
+                      key={option.id}
+                      type="button"
+                      className={cn(
+                        "min-h-11 rounded-full px-3 text-sm",
+                        active ? "bg-navy text-white dark:bg-gold dark:text-navy-deep" : "bg-paper-2 dark:bg-white/10",
+                      )}
+                      onClick={() => toggleCompare(option.id)}
+                    >
+                      {option.label}
+                    </button>
+                  );
+                })}
+              </div>
+            ) : (
+              <TranslationSelector value={translationId} onChange={changeTranslation} />
+            )}
             <BookSelector value={bookId} language={language} onChange={changeBook} />
             <ChapterSelector bookId={bookId} value={chapter} language={language} onChange={changeChapter} />
             <ModeToggle value={mode} onChange={changeMode} />

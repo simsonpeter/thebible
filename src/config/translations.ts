@@ -21,6 +21,28 @@ export function translationLabel(translationId: string): string {
   return TRANSLATION_OPTIONS.find((option) => option.id === translationId)?.label ?? translationId;
 }
 
+export function toggleParallelTranslation(current: readonly string[], id: string): string[] {
+  if (current.includes(id)) {
+    return current.length <= 2 ? [...current] : current.filter((item) => item !== id);
+  }
+  return [...current, id];
+}
+
+export function resolveParallelSelection(
+  selected: readonly string[] | undefined,
+  available: readonly string[],
+  order: "tamil-first" | "english-first" = "tamil-first",
+): string[] {
+  const pool = available.length ? available : TRANSLATION_OPTIONS.map((option) => option.id as string);
+  const wanted = (selected ?? []).filter((id) => pool.includes(id));
+  const next = [...wanted];
+  for (const id of orderParallelTranslations(pool, order)) {
+    if (next.length >= 2) break;
+    if (!next.includes(id)) next.push(id);
+  }
+  return orderParallelTranslations(next, order);
+}
+
 export function orderParallelTranslations(
   ids: readonly string[],
   order: "tamil-first" | "english-first" = "tamil-first",

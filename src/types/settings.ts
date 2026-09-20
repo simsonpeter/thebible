@@ -11,6 +11,7 @@ export interface AppSettings {
   defaultTranslation: TranslationId;
   readingMode: ReadingMode;
   parallelOrder: ParallelOrder;
+  parallelTranslations: string[];
   showVerseNumbers: boolean;
   fontPreset: FontPreset;
   tamilFontSize: number;
@@ -48,6 +49,7 @@ export const DEFAULT_SETTINGS: AppSettings = {
   defaultTranslation: "kjv",
   readingMode: "single",
   parallelOrder: "tamil-first",
+  parallelTranslations: ["bsi-ov", "kjv"],
   showVerseNumbers: true,
   fontPreset: "medium",
   tamilFontSize: 19,

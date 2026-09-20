@@ -1,4 +1,4 @@
-import { TRANSLATION_OPTIONS, orderParallelTranslations } from "@/config/translations";
+import { TRANSLATION_OPTIONS, resolveParallelSelection } from "@/config/translations";
 import { BOOK_CATALOG, getBookById } from "@/data/books";
 import { db } from "@/db";
 import type { TranslationMeta, VerseRecord } from "@/types/bible";
@@ -63,17 +63,17 @@ export function adjacentChapter(bookId: string, chapter: number, delta: number):
   };
 }
 
-export async function listParallelTranslationIds(order: ParallelOrder = "tamil-first"): Promise<string[]> {
+export async function listParallelTranslationIds(
+  order: ParallelOrder = "tamil-first",
+  selected?: readonly string[],
+): Promise<string[]> {
   const rows = await db.translations.toArray();
   const available = new Set(rows.filter((row) => row.verseCount > 0).map((row) => row.id));
   const ids: string[] = TRANSLATION_OPTIONS.map((option) => option.id as string).filter((id) => available.has(id));
   for (const id of available) {
     if (!ids.includes(id)) ids.push(id);
   }
-  return orderParallelTranslations(
-    ids.length ? ids : TRANSLATION_OPTIONS.map((option) => option.id as string),
-    order,
-  );
+  return resolveParallelSelection(selected, ids, order);
 }
 
 export async function getParallelVerses(

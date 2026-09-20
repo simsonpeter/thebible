@@ -10,7 +10,7 @@ import { useToast } from "@/hooks/useToast";
 import { useNavigate } from "react-router-dom";
 import { APP_NAME, APP_VERSION } from "@/data/licenses";
 import { bsiNoticeFromConfig } from "@/config/bibleLicenses";
-import { TRANSLATION_OPTIONS } from "@/config/translations";
+import { TRANSLATION_OPTIONS, toggleParallelTranslation } from "@/config/translations";
 import { useAuth } from "@/hooks/useAuth";
 
 export function SettingsPage() {
@@ -137,6 +137,24 @@ export function SettingsPage() {
           <Chip active={settings.readingMode === "parallel"} onClick={() => void update({ readingMode: "parallel" })}>
             Parallel
           </Chip>
+        </Row>
+        <Row label="Parallel Bibles">
+          {TRANSLATION_OPTIONS.map((option) => (
+            <Chip
+              key={option.id}
+              active={settings.parallelTranslations.includes(option.id)}
+              onClick={() => {
+                const next = toggleParallelTranslation(settings.parallelTranslations, option.id);
+                if (next.length === settings.parallelTranslations.length) {
+                  push("Keep at least two Bibles in parallel", "info");
+                  return;
+                }
+                void update({ parallelTranslations: next });
+              }}
+            >
+              {option.label}
+            </Chip>
+          ))}
         </Row>
         <Row label="Parallel order">
           <Chip active={settings.parallelOrder === "tamil-first"} onClick={() => void update({ parallelOrder: "tamil-first" })}>

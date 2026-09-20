@@ -5,7 +5,7 @@ import { dailyIndex } from "@/services/dailyVerse";
 import { formatParallelRangeShare, formatParallelShare, formatVerseShare, formatVersesShare } from "@/services/shareService";
 import { validateBibleImport } from "@/services/bibleValidation";
 import { BOOK_CATALOG, bookDisplayName, compareByBibleOrder } from "@/data/books";
-import { orderParallelTranslations } from "@/config/translations";
+import { orderParallelTranslations, resolveParallelSelection, toggleParallelTranslation } from "@/config/translations";
 import { buildPlanDays, parseNjcReference } from "@/data/readingPlans";
 import type { BibleImportFile } from "@/types/bible";
 
@@ -58,6 +58,12 @@ describe("parallel translations", () => {
     expect(orderParallelTranslations(["tanglish", "kjv", "thngv", "bsi-ov"], "english-first")).toEqual([
       "kjv",
       "bsi-ov",
+      "thngv",
+      "tanglish",
+    ]);
+    expect(toggleParallelTranslation(["bsi-ov", "kjv"], "tanglish")).toEqual(["bsi-ov", "kjv", "tanglish"]);
+    expect(toggleParallelTranslation(["bsi-ov", "kjv"], "kjv")).toEqual(["bsi-ov", "kjv"]);
+    expect(resolveParallelSelection(["tanglish", "thngv"], ["bsi-ov", "thngv", "tanglish", "kjv"])).toEqual([
       "thngv",
       "tanglish",
     ]);
