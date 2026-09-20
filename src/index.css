@@ -73,6 +73,52 @@ body {
   font-family: var(--font-serif);
 }
 
+@keyframes splash-rise {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes splash-fade {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes splash-glow {
+  0%,
+  100% {
+    box-shadow: 0 0 28px rgba(198, 163, 90, 0.2);
+  }
+  50% {
+    box-shadow: 0 0 48px rgba(198, 163, 90, 0.4);
+  }
+}
+
+.splash-rise {
+  animation: splash-rise 900ms ease-out both;
+}
+
+.splash-fade {
+  animation: splash-fade 1100ms ease-out both;
+}
+
+.splash-crest {
+  animation: splash-glow 2.8s ease-in-out infinite, splash-rise 800ms ease-out both;
+}
+
+.splash-credit {
+  animation: splash-fade 1.4s ease-out 0.35s both;
+}
+
 .verse-text::selection,
 .verse-text *::selection {
   background: color-mix(in oklab, var(--color-gold) 45%, white);

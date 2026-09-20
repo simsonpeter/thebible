@@ -24,36 +24,18 @@ import { CommentaryPage } from "@/pages/CommentaryPage";
 import { SettingsProvider } from "@/hooks/useSettings";
 import { ToastProvider } from "@/hooks/useToast";
 import { AuthProvider } from "@/hooks/useAuth";
+import { SplashScreen } from "@/components/SplashScreen";
 import { useBibleInit } from "@/hooks/useBibleInit";
 
 export function App() {
   const { ready, error, progress } = useBibleInit();
 
   if (error) {
-    return (
-      <main className="grid min-h-screen place-items-center bg-paper p-6 text-center">
-        <div>
-          <h1 className="text-2xl font-semibold">NJC Bible App</h1>
-          <p className="mt-4">Bible data is not installed yet.</p>
-          <p className="mt-2 text-sm text-muted">{error}</p>
-        </div>
-      </main>
-    );
+    return <SplashScreen error={error} />;
   }
 
   if (!ready) {
-    return (
-      <main className="grid min-h-screen place-items-center bg-navy px-6 text-center text-white">
-        <div>
-          <p className="text-sm tracking-[0.3em] text-gold uppercase">NJC Bible App</p>
-          <h1 className="mt-3 text-3xl font-semibold">Preparing your offline Bible</h1>
-          <p className="mt-4 text-gold-soft">{progress.stage}</p>
-          <div className="mx-auto mt-6 h-2 w-56 overflow-hidden rounded-full bg-white/10">
-            <div className="h-full bg-gold" style={{ width: `${progress.percent}%` }} />
-          </div>
-        </div>
-      </main>
-    );
+    return <SplashScreen stage={progress.stage} percent={progress.percent} />;
   }
 
   return (

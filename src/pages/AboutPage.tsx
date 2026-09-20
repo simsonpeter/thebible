@@ -10,6 +10,7 @@ export function AboutPage() {
       <div className="grid gap-4 text-sm leading-relaxed">
         <p className="text-lg font-semibold">{APP_NAME}</p>
         <p>Version {APP_VERSION}</p>
+        <p>Built by JayathaSoft.</p>
         <p>{LICENSES.app.privacy}</p>
         <p>There is no advertising. Offline reading continues without login.</p>
         <p>Sign in from More → Account sync with the same NJC Church App email to keep notes and reading on every device.</p>

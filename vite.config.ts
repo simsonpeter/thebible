@@ -54,8 +54,8 @@ export default defineConfig({
         short_name: "NJC Bible",
         description:
           "Offline-first Tamil and English Bible reader for BSI OV and KJV.",
-        theme_color: "#12263a",
-        background_color: "#f7f3eb",
+        theme_color: "#0b1a2b",
+        background_color: "#0b1a2b",
         display: "standalone",
         orientation: "any",
         start_url: "./",
