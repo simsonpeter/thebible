@@ -5,7 +5,6 @@ import { Page } from "@/components/layout/Page";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
 import { OfflineBadge } from "@/components/ui/OfflineBadge";
-import { ModeToggle, TranslationLanguagePicker } from "@/components/bible/TranslationSelector";
 import { useSettings } from "@/hooks/useSettings";
 import { useInstallPrompt } from "@/hooks/useInstallPrompt";
 import { listRecentHistory } from "@/services/historyService";
@@ -13,13 +12,12 @@ import { listPlans, planProgress } from "@/services/planService";
 import { formatReference } from "@/utils/reference";
 import { cn } from "@/utils/misc";
 import { isTamilScript, translationUiLanguage } from "@/config/translations";
-import type { TranslationId } from "@/types/bible";
 import type { ReadingHistoryRecord } from "@/types/userData";
 import { db } from "@/db";
 
 export function HomePage() {
   const navigate = useNavigate();
-  const { settings, update } = useSettings();
+  const { settings } = useSettings();
   const { canInstall, install } = useInstallPrompt();
   const [recent, setRecent] = useState<ReadingHistoryRecord[]>([]);
   const [planInfo, setPlanInfo] = useState({ name: "Reading Plan", day: 1, total: 365, id: "njc-plan" });
@@ -54,19 +52,6 @@ export function HomePage() {
             Install
           </Button>
         ) : null}
-      </div>
-
-      <div className="mb-4 grid gap-2">
-        <TranslationLanguagePicker
-          compact
-          selected={settings.defaultTranslation}
-          onSelect={(id) => void update({ defaultTranslation: id as TranslationId })}
-          order={settings.parallelOrder}
-        />
-        <ModeToggle
-          value={settings.readingMode}
-          onChange={(mode) => void update({ readingMode: mode })}
-        />
       </div>
 
       {!bsiReady ? (
