@@ -40,7 +40,7 @@ export function DictionaryPage() {
   const selected = selectedId ? hits.find((entry) => entry.id === selectedId) ?? null : null;
 
   return (
-    <Page title="Strong's" subtitle="ஸ்ட்ராங்க்ஸ் அகராதி • Tamil dictionary" back>
+    <Page title="Strong Dictionary" subtitle="Hebrew/Greek" back>
       <SearchBar value={query} onChange={setQuery} placeholder="H430 • G26 • தேவன் • love" />
       <div className="mt-3 flex flex-wrap gap-2">
         {(
@@ -61,8 +61,7 @@ export function DictionaryPage() {
         ))}
       </div>
       <p className="mt-4 text-sm text-muted">
-        Offline Strong's Hebrew and Greek dictionary in Tamil. Look up a number or a word. This is a study aid, not
-        Scripture.
+        Offline Hebrew and Greek dictionary in Tamil. Look up a number or a word. This is a study aid, not Scripture.
       </p>
       <div className="mt-5 grid gap-3">
         {!ready ? <p className="text-sm text-muted">Loading dictionary…</p> : null}
@@ -71,7 +70,7 @@ export function DictionaryPage() {
           <p className="text-sm text-muted">Type H430, G26, or a Tamil or English word.</p>
         ) : null}
         {ready && query.trim().length >= 2 && hits.length === 0 ? (
-          <p className="text-sm text-muted">No Strong's entries matched on this phone.</p>
+          <p className="text-sm text-muted">No dictionary entries matched on this phone.</p>
         ) : null}
         {hits.map((entry) => (
           <DictionaryEntryCard

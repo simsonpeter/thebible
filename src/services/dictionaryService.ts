@@ -24,7 +24,7 @@ export async function loadStrongEntries(): Promise<StrongEntry[]> {
   if (!cached) {
     cached = (async () => {
       const response = await fetch(publicUrl("bible-data/strongs/strongs.json"));
-      if (!response.ok) throw new Error("Strong's dictionary is not installed.");
+      if (!response.ok) throw new Error("Strong Dictionary is not installed.");
       const payload = (await response.json()) as StrongDictionaryFile;
       return payload.entries ?? [];
     })();

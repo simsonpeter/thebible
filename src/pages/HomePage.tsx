@@ -106,18 +106,21 @@ export function HomePage() {
       </Card>
 
       <div className="mb-4 grid grid-cols-2 gap-3">
-        {[
-          { label: "READ BIBLE", to: "/bible" },
-          { label: "SEARCH", to: "/search" },
-          { label: "STRONG'S", to: "/dictionary" },
-          { label: `BOOKMARKS (${bookmarkCount})`, to: "/bookmarks" },
-          { label: `HIGHLIGHTS (${highlightCount})`, to: "/highlights" },
-          { label: `NOTES (${noteCount})`, to: "/notes" },
-          { label: `SERMONS (${sermonCount})`, to: "/sermons" },
-          { label: "READING PLANS", to: "/reading-plans" },
-        ].map((item) => (
+        {(
+          [
+            { label: "READ BIBLE", to: "/bible" },
+            { label: "SEARCH", to: "/search" },
+            { label: "Strong Dictionary", subtitle: "Hebrew/Greek", to: "/dictionary" },
+            { label: `BOOKMARKS (${bookmarkCount})`, to: "/bookmarks" },
+            { label: `HIGHLIGHTS (${highlightCount})`, to: "/highlights" },
+            { label: `NOTES (${noteCount})`, to: "/notes" },
+            { label: `SERMONS (${sermonCount})`, to: "/sermons" },
+            { label: "READING PLANS", to: "/reading-plans" },
+          ] as Array<{ label: string; to: string; subtitle?: string }>
+        ).map((item) => (
           <Card key={item.to} onClick={() => navigate(item.to)}>
             <p className="text-sm font-semibold tracking-wide">{item.label}</p>
+            {item.subtitle ? <p className="mt-1 text-xs text-muted">{item.subtitle}</p> : null}
           </Card>
         ))}
       </div>

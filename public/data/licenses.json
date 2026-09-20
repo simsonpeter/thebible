@@ -25,7 +25,7 @@
     },
     {
       "id": "strongs",
-      "name": "Strong's Dictionary in Tamil",
+      "name": "Strong Dictionary",
       "license": "Public-domain Tamil Strong's wording. MIT covers the source repository packaging.",
       "source": "https://github.com/yesudas/strongs-dictionary-in-tamil"
     }

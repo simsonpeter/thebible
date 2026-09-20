@@ -10,7 +10,7 @@ const actions = [
   { id: "sermon", label: "Add to sermon" },
   { id: "compare", label: "Compare" },
   { id: "search", label: "Search" },
-  { id: "strongs", label: "Strong's" },
+  { id: "strongs", label: "Strong Dictionary" },
   { id: "image", label: "Verse Image" },
 ] as const;
 

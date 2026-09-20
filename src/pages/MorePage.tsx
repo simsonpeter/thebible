@@ -10,11 +10,11 @@ export function MorePage() {
   const navigate = useNavigate();
   const { canInstall, install } = useInstallPrompt();
   const { push } = useToast();
-  const links = [
+  const links: Array<{ to: string; label: string; subtitle?: string }> = [
     { to: "/account", label: "Account sync" },
     { to: "/sermons", label: "Sunday sermons" },
     { to: "/reading-plans", label: "Reading plans" },
-    { to: "/dictionary", label: "Strong's dictionary" },
+    { to: "/dictionary", label: "Strong Dictionary", subtitle: "Hebrew/Greek" },
     { to: "/progress", label: "Bible progress" },
     { to: "/verse-image", label: "Verse image" },
     { to: "/import", label: "Import Bible data" },
@@ -29,6 +29,7 @@ export function MorePage() {
         {links.map((link) => (
           <Card key={link.to} onClick={() => navigate(link.to)}>
             <p className="font-semibold">{link.label}</p>
+            {link.subtitle ? <p className="mt-1 text-sm text-muted">{link.subtitle}</p> : null}
           </Card>
         ))}
         {canInstall ? (
