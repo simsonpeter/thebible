@@ -12,6 +12,7 @@ Offline-first Tamil and English Bible reader. Reading works without an account. 
 | `bsi-ov` | Tamil Bible (Old Version) | Bundled from the per-book JSON files in [aruljohn/Bible-tamil](https://github.com/aruljohn/Bible-tamil). Labeled as classic Tamil O.V., **not** authorized BSI New Ortho. |
 | `tanglish` | Tanglish (Tamil Romanised) | Bundled from the TAMRB modules in [yesudas/all-bible-databases Tanglish](https://github.com/yesudas/all-bible-databases/tree/main/Bibles/Tamil-Bible-Database-and-Software-Modules/Tanglish). Latin-script Tamil wording, **not** authorized BSI New Ortho. |
 | `thngv` | Hebrew Names of God Version (Tamil) | Bundled from [yesudas/tamil-bible-hebrew-names-of-god-version](https://github.com/yesudas/tamil-bible-hebrew-names-of-god-version). Public-domain THNGV restored by Pastor Paul Jonathan from the 1871 Henry Bower Tamil text. **Not** authorized BSI New Ortho. |
+| `sv` | Statenvertaling (1637) | Bundled from [seven1m/open-bibles](https://github.com/seven1m/open-bibles) `dut-statenvertaling.zefania.xml`. Public-domain classic Dutch Statenvertaling. **Not** the copyrighted Herziene Statenvertaling (HSV). |
 
 ## Study tools
 

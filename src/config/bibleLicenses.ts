@@ -45,6 +45,16 @@ export const bibleLicenses = {
       "Hebrew Names of God Version in Tamil (THNGV) from https://github.com/yesudas/tamil-bible-hebrew-names-of-god-version. Restored and edited by Pastor Paul Jonathan. The base Tamil wording is the Henry Bower translation published in 1871. Hebrew names of God are restored in Tamil and English. The repository states this edition is public domain, may be copied and shared unchanged, and may not be sold. NJC Bible App does not present this text as authorized BSI New Ortho.",
     publisherText: "Pastor Paul Jonathan & Word of God Team. https://github.com/yesudas/tamil-bible-hebrew-names-of-god-version",
   },
+  sv: {
+    id: "sv",
+    name: "Statenvertaling (1637)",
+    abbreviation: "SV",
+    language: "nl" as const,
+    copyrightText: "Public Domain. Not Herziene Statenvertaling (HSV).",
+    permissionText:
+      "Classic Dutch Statenvertaling (1637) from https://github.com/seven1m/open-bibles (dut-statenvertaling.zefania.xml). That repository lists this text as public domain. The Herziene Statenvertaling (HSV) is copyrighted by Stichting HSV and is not bundled. NJC Bible App does not present this text as HSV.",
+    publisherText: "https://github.com/seven1m/open-bibles",
+  },
 };
 
 export function bsiNoticeFromConfig(): string {

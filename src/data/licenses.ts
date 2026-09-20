@@ -52,6 +52,16 @@ export const LICENSES = {
     source: bibleLicenses.thngv.publisherText,
     year: 2026,
   },
+  sv: {
+    id: bibleLicenses.sv.id,
+    name: bibleLicenses.sv.name,
+    abbreviation: bibleLicenses.sv.abbreviation,
+    language: bibleLicenses.sv.language,
+    license: bibleLicenses.sv.copyrightText,
+    licenseDetails: bibleLicenses.sv.permissionText,
+    source: bibleLicenses.sv.publisherText,
+    year: 1637,
+  },
   strongs: {
     name: "Strong Dictionary",
     abbreviation: "Hebrew/Greek",

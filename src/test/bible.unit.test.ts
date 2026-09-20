@@ -49,14 +49,16 @@ describe("NJC reading plan", () => {
 
 describe("parallel translations", () => {
   it("includes every bundled version and can put English first", () => {
-    expect(orderParallelTranslations(["tanglish", "kjv", "thngv", "bsi-ov"])).toEqual([
+    expect(orderParallelTranslations(["tanglish", "kjv", "thngv", "bsi-ov", "sv"])).toEqual([
       "bsi-ov",
       "thngv",
       "tanglish",
       "kjv",
+      "sv",
     ]);
-    expect(orderParallelTranslations(["tanglish", "kjv", "thngv", "bsi-ov"], "english-first")).toEqual([
+    expect(orderParallelTranslations(["tanglish", "kjv", "thngv", "bsi-ov", "sv"], "english-first")).toEqual([
       "kjv",
+      "sv",
       "bsi-ov",
       "thngv",
       "tanglish",
@@ -74,8 +76,9 @@ describe("parallel translations", () => {
       ["ta", ["bsi-ov", "thngv"]],
       ["tl", ["tanglish"]],
       ["en", ["kjv"]],
+      ["nl", ["sv"]],
     ]);
-    expect(translationsByLanguage("english-first").map((group) => group.id)).toEqual(["en", "ta", "tl"]);
+    expect(translationsByLanguage("english-first").map((group) => group.id)).toEqual(["en", "nl", "ta", "tl"]);
   });
 });
 

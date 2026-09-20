@@ -30,6 +30,12 @@
       "source": "https://github.com/yesudas/tamil-bible-hebrew-names-of-god-version"
     },
     {
+      "id": "sv",
+      "name": "Statenvertaling (1637)",
+      "license": "Public Domain. Not Herziene Statenvertaling (HSV).",
+      "source": "https://github.com/seven1m/open-bibles"
+    },
+    {
       "id": "strongs",
       "name": "Strong Dictionary",
       "license": "Public-domain Tamil Strong's wording. MIT covers the source repository packaging.",

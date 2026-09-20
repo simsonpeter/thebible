@@ -44,7 +44,9 @@ export function SearchPage() {
               ? "tanglish"
               : language === "hn"
                 ? "thngv"
-                : settings.defaultTranslation;
+                : language === "nl"
+                  ? "sv"
+                  : settings.defaultTranslation;
       void indexedSearch({
         text: query,
         translationId,
@@ -70,6 +72,7 @@ export function SearchPage() {
             ["hn", "THNGV"],
             ["tl", "Tanglish"],
             ["en", "English"],
+            ["nl", "Dutch"],
             ["both", "All"],
           ] as Array<[SearchLanguage, string]>
         ).map(([id, label]) => (

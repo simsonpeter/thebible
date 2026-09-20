@@ -1,16 +1,18 @@
-export type TranslationLanguage = "ta" | "tl" | "en";
+export type TranslationLanguage = "ta" | "tl" | "en" | "nl";
 
 export const TRANSLATION_OPTIONS = [
   { id: "bsi-ov", label: "தமிழ் O.V.", language: "ta" },
   { id: "thngv", label: "THNGV", language: "ta" },
   { id: "tanglish", label: "Tanglish", language: "tl" },
   { id: "kjv", label: "English KJV", language: "en" },
+  { id: "sv", label: "Nederlands SV", language: "nl" },
 ] as const;
 
 export const TRANSLATION_LANGUAGE_GROUPS = [
   { id: "ta", label: "Tamil · தமிழ்" },
   { id: "tl", label: "Tanglish" },
   { id: "en", label: "English" },
+  { id: "nl", label: "Dutch · Nederlands" },
 ] as const;
 
 export function translationLanguage(translationId: string): TranslationLanguage {
@@ -27,7 +29,11 @@ export function translationsByLanguage(
     options: TRANSLATION_OPTIONS.filter((option) => option.language === group.id),
   }));
   if (order === "english-first") {
-    return [...groups.filter((group) => group.id === "en"), ...groups.filter((group) => group.id !== "en")];
+    return [
+      ...groups.filter((group) => group.id === "en"),
+      ...groups.filter((group) => group.id === "nl"),
+      ...groups.filter((group) => group.id !== "en" && group.id !== "nl"),
+    ];
   }
   return groups;
 }
@@ -45,6 +51,7 @@ export function translationLabel(translationId: string): string {
   if (translationId === "thngv") return "THNGV";
   if (translationId === "tanglish") return "Tanglish";
   if (translationId === "kjv") return "KJV";
+  if (translationId === "sv") return "SV";
   return TRANSLATION_OPTIONS.find((option) => option.id === translationId)?.label ?? translationId;
 }
 

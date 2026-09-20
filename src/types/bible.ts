@@ -3,6 +3,7 @@ export const TRANSLATION_IDS = {
   BSI_OV: "bsi-ov",
   TANGLISH: "tanglish",
   THNGV: "thngv",
+  SV: "sv",
 } as const;
 
 export type TranslationId = (typeof TRANSLATION_IDS)[keyof typeof TRANSLATION_IDS];

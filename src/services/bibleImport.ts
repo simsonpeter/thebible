@@ -269,6 +269,17 @@ async function ensureBundledThngv(onProgress?: (progress: ImportProgress) => voi
   await replaceTranslation(bundled);
 }
 
+async function ensureBundledSv(onProgress?: (progress: ImportProgress) => void): Promise<void> {
+  const existing = await db.translations.get("sv");
+  if (existing && !existing.isDemo && existing.verseCount > 0) return;
+  const bundled = await fetchJsonIfPresent(publicUrl("bible-data/sv/sv.json"));
+  if (!bundled) return;
+  const check = validateBibleImport(bundled, { allowPartial: true });
+  if (!check.ok) return;
+  onProgress?.({ stage: "Installing Dutch Statenvertaling…", percent: 94 });
+  await replaceTranslation(bundled);
+}
+
 export async function removeDemoTranslation(translationId: string): Promise<void> {
   const translation = await db.translations.get(translationId);
   if (!translation?.isDemo) return;
@@ -290,6 +301,7 @@ export async function bootstrapLocalBible(
     await ensureBundledTamil(onProgress);
     await ensureBundledTanglish(onProgress);
     await ensureBundledThngv(onProgress);
+    await ensureBundledSv(onProgress);
     await seedReadingPlans();
     onProgress?.({ stage: "Offline Bible ready", percent: 100 });
     return;
@@ -313,6 +325,7 @@ export async function bootstrapLocalBible(
   await ensureBundledTamil(onProgress);
   await ensureBundledTanglish(onProgress);
   await ensureBundledThngv(onProgress);
+  await ensureBundledSv(onProgress);
 
   onProgress?.({ stage: "Creating reading plans…", percent: 90 });
   await seedReadingPlans();
