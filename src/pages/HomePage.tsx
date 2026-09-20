@@ -82,9 +82,9 @@ export function HomePage() {
         </p>
       ) : null}
 
-      <Card className="mb-4 bg-navy text-white dark:bg-navy-soft">
-        <p className="text-xs tracking-[0.25em] text-gold-soft uppercase">Continue Reading</p>
-        <h2 className={cn("mt-2 text-2xl font-semibold", settings.defaultTranslation === "bsi-ov" && "tamil")}>
+      <section className="mb-4 rounded-3xl bg-[#12263A] p-5 text-white dark:bg-[#1d3b5a]">
+        <p className="text-xs tracking-[0.25em] text-[#e8d5a3] uppercase">Continue Reading</p>
+        <h2 className={cn("mt-2 text-2xl font-semibold text-white", settings.defaultTranslation === "bsi-ov" && "tamil")}>
           {formatReference(continueBook, continueChapter, continueVerse || undefined, settings.defaultTranslation === "bsi-ov" ? "ta" : "en")}
         </h2>
         <Button
@@ -98,7 +98,7 @@ export function HomePage() {
         >
           Continue
         </Button>
-      </Card>
+      </section>
 
       <Card className="mb-4" onClick={() => navigate("/sermons")}>
         <p className="text-xs tracking-[0.25em] text-gold uppercase">Sunday sermon</p>
