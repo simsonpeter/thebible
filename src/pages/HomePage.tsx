@@ -112,6 +112,30 @@ export function HomePage() {
         </p>
       </button>
 
+      <div className="mb-4 grid grid-cols-2 gap-3">
+        {[
+          { label: "READ BIBLE", to: "/bible" },
+          { label: "SEARCH", to: "/search" },
+          { label: `BOOKMARKS (${bookmarkCount})`, to: "/bookmarks" },
+          { label: `HIGHLIGHTS (${highlightCount})`, to: "/highlights" },
+          { label: `NOTES (${noteCount})`, to: "/notes" },
+          { label: `SERMONS (${sermonCount})`, to: "/sermons" },
+          { label: "READING PLANS", to: "/reading-plans" },
+        ].map((item) => (
+          <Card key={item.to} onClick={() => navigate(item.to)}>
+            <p className="text-sm font-semibold tracking-wide">{item.label}</p>
+          </Card>
+        ))}
+      </div>
+
+      <Card className="mb-4" onClick={() => navigate("/sermons")}>
+        <p className="text-xs tracking-[0.25em] text-gold uppercase">Sunday sermon</p>
+        <h2 className="mt-2 font-semibold">Prepare this week&apos;s notes</h2>
+        <p className="mt-1 text-sm text-muted">
+          {sermonCount ? `${sermonCount} notebook${sermonCount === 1 ? "" : "s"} on this phone` : "Collect verses, write the outline, then share to Google Drive."}
+        </p>
+      </Card>
+
       <section className="mb-4">
         <div className="mb-3 flex items-center justify-between">
           <h2 className="font-semibold">Recently read</h2>
@@ -128,30 +152,6 @@ export function HomePage() {
           ))}
         </div>
       </section>
-
-      <Card className="mb-4" onClick={() => navigate("/sermons")}>
-        <p className="text-xs tracking-[0.25em] text-gold uppercase">Sunday sermon</p>
-        <h2 className="mt-2 font-semibold">Prepare this week&apos;s notes</h2>
-        <p className="mt-1 text-sm text-muted">
-          {sermonCount ? `${sermonCount} notebook${sermonCount === 1 ? "" : "s"} on this phone` : "Collect verses, write the outline, then share to Google Drive."}
-        </p>
-      </Card>
-
-      <div className="mb-4 grid grid-cols-2 gap-3">
-        {[
-          { label: "READ BIBLE", to: "/bible" },
-          { label: "SEARCH", to: "/search" },
-          { label: `BOOKMARKS (${bookmarkCount})`, to: "/bookmarks" },
-          { label: `HIGHLIGHTS (${highlightCount})`, to: "/highlights" },
-          { label: `NOTES (${noteCount})`, to: "/notes" },
-          { label: `SERMONS (${sermonCount})`, to: "/sermons" },
-          { label: "READING PLANS", to: "/reading-plans" },
-        ].map((item) => (
-          <Card key={item.to} onClick={() => navigate(item.to)}>
-            <p className="text-sm font-semibold tracking-wide">{item.label}</p>
-          </Card>
-        ))}
-      </div>
     </Page>
   );
 }
