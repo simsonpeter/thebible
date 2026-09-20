@@ -1,8 +1,7 @@
 /**
- * Future account + cloud sync architecture.
- *
- * Version 1 stores everything locally. Offline reading must never depend on login.
- * A later backend can implement this adapter without rewriting feature screens.
+ * Account + cloud sync uses the NJC Church App Firebase project.
+ * Email/password is the same sign-in as simsonpeter/Church-App.
+ * Offline reading never depends on login.
  */
 export type AuthProvider = "google" | "email" | "local";
 

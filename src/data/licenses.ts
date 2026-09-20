@@ -7,7 +7,7 @@ export const LICENSES = {
   app: {
     name: APP_NAME,
     version: APP_VERSION,
-    privacy: "Your Bible reading data is stored locally on this device.",
+    privacy: "Reading works offline without an account. If you sign in, notes, bookmarks, highlights, sermons, reading history, and reading plans sync through the same NJC Firebase account used by the church app.",
     analytics: false,
     advertising: false,
   },

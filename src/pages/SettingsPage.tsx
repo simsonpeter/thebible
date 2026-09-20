@@ -10,11 +10,13 @@ import { useToast } from "@/hooks/useToast";
 import { useNavigate } from "react-router-dom";
 import { APP_NAME, APP_VERSION } from "@/data/licenses";
 import { bsiNoticeFromConfig } from "@/config/bibleLicenses";
+import { useAuth } from "@/hooks/useAuth";
 
 export function SettingsPage() {
   const { settings, update } = useSettings();
   const { push } = useToast();
   const navigate = useNavigate();
+  const { user } = useAuth();
   const [storage, setStorage] = useState({ translations: 0, verses: 0, bookmarks: 0, notes: 0, sermons: 0 });
 
   useEffect(() => {
@@ -23,6 +25,20 @@ export function SettingsPage() {
 
   return (
     <Page title="Settings">
+      <SettingsSection title="Account">
+        <div className="flex flex-wrap items-center justify-between gap-3 p-4">
+          <div>
+            <p className="text-sm font-medium">{user?.email || "Not signed in"}</p>
+            <p className="mt-1 text-sm text-muted">
+              {user ? "Notes, reading, and plans sync across your devices." : "Sign in with your NJC account to sync across devices."}
+            </p>
+          </div>
+          <Button variant={user ? "secondary" : "primary"} onClick={() => navigate("/account")}>
+            {user ? "Manage" : "Sign in"}
+          </Button>
+        </div>
+      </SettingsSection>
+
       <SettingsSection title="Appearance">
         <Row label="Dark mode">
           {(["light", "dark", "system"] as const).map((theme) => (
@@ -227,7 +243,7 @@ export function SettingsPage() {
 
       <SettingsSection title="Privacy">
         <div className="p-4 text-sm">
-          <p>Your Bible reading data is stored locally on this device.</p>
+          <p>Reading stays on this device until you sign in. Signed-in data syncs with your NJC account.</p>
           <Button variant="ghost" className="mt-3" onClick={() => navigate("/privacy")}>
             Privacy Policy
           </Button>

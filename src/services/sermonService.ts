@@ -18,10 +18,19 @@ export async function listSermonPassages(sermonId: number): Promise<SermonPassag
   return db.sermonPassages.where("sermonId").equals(sermonId).sortBy("order");
 }
 
+async function ensureSermonSyncId(sermonId: number): Promise<string> {
+  const sermon = await db.sermons.get(sermonId);
+  if (sermon?.syncId) return sermon.syncId;
+  const syncId = crypto.randomUUID();
+  await db.sermons.update(sermonId, { syncId });
+  return syncId;
+}
+
 export async function createSermon(input?: { title?: string; sundayDate?: string; body?: string }): Promise<number> {
   const stamp = nowIso();
   const sundayDate = input?.sundayDate ?? upcomingSundayKey();
   const id = await db.sermons.add({
+    syncId: crypto.randomUUID(),
     title: input?.title?.trim() || "Sunday sermon",
     sundayDate,
     body: input?.body ?? "",
@@ -40,10 +49,15 @@ export async function updateSermon(
 }
 
 export async function deleteSermon(id: number): Promise<void> {
+  const sermon = await db.sermons.get(id);
   await db.transaction("rw", [db.sermons, db.sermonPassages], async () => {
     await db.sermonPassages.where("sermonId").equals(id).delete();
     await db.sermons.delete(id);
   });
+  if (sermon?.syncId) {
+    const { rememberDeleted } = await import("@/services/tombstoneService");
+    await rememberDeleted("sermons", sermon.syncId);
+  }
 }
 
 export async function addSermonPassage(
@@ -55,8 +69,10 @@ export async function addSermonPassage(
   const duplicate = existing.find((row) => row.verseId === verse.id);
   if (duplicate?.id) return duplicate.id;
   const order = existing.reduce((max, row) => Math.max(max, row.order), -1) + 1;
+  const sermonSyncId = await ensureSermonSyncId(sermonId);
   const id = await db.sermonPassages.add({
     sermonId,
+    sermonSyncId,
     order,
     translationId: verse.translationId,
     bookId: verse.bookId,
@@ -87,8 +103,10 @@ export async function addSermonPassageRange(
   const duplicate = existing.find((row) => row.verseId === rangeId);
   if (duplicate?.id) return duplicate.id;
   const order = existing.reduce((max, row) => Math.max(max, row.order), -1) + 1;
+  const sermonSyncId = await ensureSermonSyncId(sermonId);
   const id = await db.sermonPassages.add({
     sermonId,
+    sermonSyncId,
     order,
     translationId: first.translationId,
     bookId: first.bookId,

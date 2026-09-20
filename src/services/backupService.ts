@@ -1,8 +1,10 @@
 import { db } from "@/db";
 import type { UserBackupV1 } from "@/types/userData";
+import { EMPTY_TOMBSTONES } from "@/types/userData";
 import { DEFAULT_SETTINGS } from "@/types/settings";
 import { nowIso } from "@/utils/misc";
 import { seedReadingPlans } from "@/services/planService";
+import { loadTombstones, saveTombstones } from "@/services/tombstoneService";
 
 export async function exportUserData(): Promise<UserBackupV1> {
   const [
@@ -29,6 +31,24 @@ export async function exportUserData(): Promise<UserBackupV1> {
     db.settings.get("app"),
   ]);
 
+  for (const sermon of sermons) {
+    if (sermon.syncId && sermon.id) continue;
+    if (!sermon.id) continue;
+    const syncId = sermon.syncId || crypto.randomUUID();
+    await db.sermons.update(sermon.id, { syncId });
+    sermon.syncId = syncId;
+  }
+  const sermonSyncById = new Map(sermons.filter((row) => row.id && row.syncId).map((row) => [row.id!, row.syncId!]));
+  for (const passage of sermonPassages) {
+    const syncId = passage.sermonSyncId || sermonSyncById.get(passage.sermonId);
+    if (!syncId || !passage.id) continue;
+    if (passage.sermonSyncId === syncId) continue;
+    await db.sermonPassages.update(passage.id, { sermonSyncId: syncId });
+    passage.sermonSyncId = syncId;
+  }
+
+  const tombstones = await loadTombstones();
+
   return {
     version: 1,
     app: "NJC Bible App",
@@ -42,6 +62,7 @@ export async function exportUserData(): Promise<UserBackupV1> {
     readingPlans,
     sermons,
     sermonPassages,
+    tombstones,
     settings: settingsRow?.value ?? DEFAULT_SETTINGS,
   };
 }
@@ -77,8 +98,7 @@ export async function importUserData(payload: UserBackupV1): Promise<void> {
         await db.readingPlans.clear();
         await db.readingPlans.bulkPut(payload.readingPlans);
       }
-      if (payload.sermons?.length) await db.sermons.bulkPut(payload.sermons);
-      if (payload.sermonPassages?.length) await db.sermonPassages.bulkPut(payload.sermonPassages);
+      await restoreSermons(payload);
       if (payload.bookmarks.length) {
         await db.bookmarks.bulkAdd(payload.bookmarks.map((row) => {
           const copy = { ...row };
@@ -106,6 +126,29 @@ export async function importUserData(payload: UserBackupV1): Promise<void> {
       await db.settings.put({ key: "app", value: payload.settings ?? DEFAULT_SETTINGS });
     },
   );
+  await saveTombstones(payload.tombstones ?? EMPTY_TOMBSTONES);
+}
+
+async function restoreSermons(payload: UserBackupV1): Promise<void> {
+  const sermons = payload.sermons ?? [];
+  const passages = payload.sermonPassages ?? [];
+  if (!sermons.length && !passages.length) return;
+  const idBySync = new Map<string, number>();
+  for (const sermon of sermons) {
+    const syncId = sermon.syncId || crypto.randomUUID();
+    const copy = { ...sermon, syncId };
+    delete copy.id;
+    const newId = await db.sermons.add(copy);
+    if (typeof newId === "number") idBySync.set(syncId, newId);
+  }
+  for (const passage of passages) {
+    const syncId = passage.sermonSyncId || sermons.find((row) => row.id === passage.sermonId)?.syncId;
+    const sermonId = syncId ? idBySync.get(syncId) : undefined;
+    if (!sermonId) continue;
+    const copy = { ...passage, sermonId, sermonSyncId: syncId };
+    delete copy.id;
+    await db.sermonPassages.add(copy);
+  }
 }
 
 export async function resetUserData(): Promise<void> {

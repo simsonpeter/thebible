@@ -18,8 +18,10 @@ import { ProgressPage } from "@/pages/ProgressPage";
 import { VerseImagePage } from "@/pages/VerseImagePage";
 import { ImportPage } from "@/pages/ImportPage";
 import { PrivacyPage } from "@/pages/PrivacyPage";
+import { AccountPage } from "@/pages/AccountPage";
 import { SettingsProvider } from "@/hooks/useSettings";
 import { ToastProvider } from "@/hooks/useToast";
+import { AuthProvider } from "@/hooks/useAuth";
 import { useBibleInit } from "@/hooks/useBibleInit";
 
 export function App() {
@@ -55,6 +57,7 @@ export function App() {
   return (
     <SettingsProvider>
       <ToastProvider>
+        <AuthProvider>
         <BrowserRouter basename={import.meta.env.BASE_URL.replace(/\/$/, "") || "/"}>
           <Routes>
             <Route element={<AppShell />}>
@@ -72,6 +75,7 @@ export function App() {
               <Route path="/reading-plans" element={<ReadingPlansPage />} />
               <Route path="/reading-plans/:planId" element={<PlanDetailPage />} />
               <Route path="/settings" element={<SettingsPage />} />
+              <Route path="/account" element={<AccountPage />} />
               <Route path="/about" element={<AboutPage />} />
               <Route path="/more" element={<MorePage />} />
               <Route path="/progress" element={<ProgressPage />} />
@@ -82,6 +86,7 @@ export function App() {
             </Route>
           </Routes>
         </BrowserRouter>
+        </AuthProvider>
       </ToastProvider>
     </SettingsProvider>
   );

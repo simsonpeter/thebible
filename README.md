@@ -1,6 +1,6 @@
 # NJC Bible App
 
-Offline-first Tamil and English Bible reader. Version 1 stores everything locally in IndexedDB. There is no backend, no analytics, and no account requirement.
+Offline-first Tamil and English Bible reader. Reading works without an account. Sign in with the same NJC Church App email to sync notes, bookmarks, highlights, sermons, reading history, and reading plans across devices.
 
 **NJC Bible App** • தமிழ் வேதாகமம் • English Bible
 
@@ -75,7 +75,8 @@ KJV file: `bible-data/kjv/kjv.json` (converted from the public-domain source in 
 
 ## Known limitations
 
-- Cloud sync, Google/email login, and online quiz leaderboards are architected but not implemented.
+- Sign-in uses the NJC Church App Firebase project (`songbook-add54`). Add `thebible-five.vercel.app` and `localhost` under Firebase Authentication → Authorized domains if login shows an unauthorized-domain error.
+- Online quiz leaderboards are not implemented.
 - PWA install prompts depend on the browser.
 - Screen wake lock depends on browser support.
 
@@ -97,7 +98,7 @@ Host Digital Asset Links at `https://thebible-five.vercel.app/.well-known/assetl
 
 ## Future architecture
 
-- Accounts: `src/features/accounts/architecture.ts` and `src/quiz/`
+- Accounts: `src/hooks/useAuth.tsx` and `src/services/syncService.ts` (NJC Church App Firebase)
 - Quiz: `src/quiz/` plus `src/features/quiz/architecture.ts`
 
 Offline reading must remain available without login.

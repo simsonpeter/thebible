@@ -41,6 +41,7 @@ export interface NoteRecord {
 
 export interface SermonRecord {
   id?: number;
+  syncId?: string;
   title: string;
   sundayDate: string;
   body: string;
@@ -51,6 +52,7 @@ export interface SermonRecord {
 export interface SermonPassageRecord {
   id?: number;
   sermonId: number;
+  sermonSyncId?: string;
   order: number;
   translationId: string;
   bookId: string;
@@ -112,5 +114,20 @@ export interface UserBackupV1 {
   readingPlans?: ReadingPlanRecord[];
   sermons?: SermonRecord[];
   sermonPassages?: SermonPassageRecord[];
+  tombstones?: SyncTombstones;
   settings: unknown;
 }
+
+export interface SyncTombstones {
+  notes: string[];
+  bookmarks: string[];
+  highlights: string[];
+  sermons: string[];
+}
+
+export const EMPTY_TOMBSTONES: SyncTombstones = {
+  notes: [],
+  bookmarks: [],
+  highlights: [],
+  sermons: [],
+};

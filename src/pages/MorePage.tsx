@@ -11,6 +11,7 @@ export function MorePage() {
   const { canInstall, install } = useInstallPrompt();
   const { push } = useToast();
   const links = [
+    { to: "/account", label: "Account sync" },
     { to: "/sermons", label: "Sunday sermons" },
     { to: "/reading-plans", label: "Reading plans" },
     { to: "/progress", label: "Bible progress" },

@@ -20,6 +20,7 @@
     "@fontsource/source-serif-4": "^5.2.8",
     "dexie": "^4.2.0",
     "dexie-react-hooks": "^4.2.0",
+    "firebase": "^12.19.0",
     "react": "^19.1.1",
     "react-dom": "^19.1.1",
     "react-router-dom": "^7.9.1"

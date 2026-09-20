@@ -11,8 +11,8 @@ export function AboutPage() {
         <p className="text-lg font-semibold">{APP_NAME}</p>
         <p>Version {APP_VERSION}</p>
         <p>{LICENSES.app.privacy}</p>
-        <p>Version 1 does not collect personal data. There is no analytics, advertising, or tracking.</p>
-        <p>Accounts, cloud sync, and online quizzes can be added later. Offline reading does not require login.</p>
+        <p>There is no advertising. Offline reading continues without login.</p>
+        <p>Sign in from More → Account sync with the same NJC Church App email to keep notes and reading on every device.</p>
         <h2 className="mt-4 text-base font-semibold">Bible Information</h2>
         <article className="rounded-3xl bg-white/80 p-4 dark:bg-white/5">
           <h3 className="font-semibold">{LICENSES.bsiOv.name}</h3>
