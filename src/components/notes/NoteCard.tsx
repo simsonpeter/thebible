@@ -1,5 +1,6 @@
 import type { NoteRecord } from "@/types/userData";
 import { formatReference } from "@/utils/reference";
+import { isTamilScript, translationUiLanguage } from "@/config/translations";
 import { formatDisplayDate } from "@/utils/misc";
 import { Card } from "@/components/ui/Card";
 
@@ -16,8 +17,8 @@ export function NoteCard({
 }) {
   return (
     <Card>
-      <p className={note.translationId === "bsi-ov" ? "tamil text-sm font-semibold" : "text-sm font-semibold"}>
-        {formatReference(note.bookId, note.chapter, note.verseNumber, note.translationId === "bsi-ov" ? "ta" : "en")}
+      <p className={isTamilScript(note.translationId) ? "tamil text-sm font-semibold" : "text-sm font-semibold"}>
+        {formatReference(note.bookId, note.chapter, note.verseNumber, translationUiLanguage(note.translationId))}
       </p>
       <p className="mt-2 whitespace-pre-wrap">{note.text}</p>
       <p className="mt-2 text-xs text-muted">{formatDisplayDate(note.updatedAt)}</p>

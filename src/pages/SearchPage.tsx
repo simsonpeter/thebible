@@ -36,7 +36,15 @@ export function SearchPage() {
       }
       setSearching(true);
       const translationId =
-        language === "ta" ? "bsi-ov" : language === "en" ? "kjv" : language === "tl" ? "tanglish" : settings.defaultTranslation;
+        language === "ta"
+          ? "bsi-ov"
+          : language === "en"
+            ? "kjv"
+            : language === "tl"
+              ? "tanglish"
+              : language === "hn"
+                ? "thngv"
+                : settings.defaultTranslation;
       void indexedSearch({
         text: query,
         translationId,
@@ -59,6 +67,7 @@ export function SearchPage() {
         {(
           [
             ["ta", "Tamil"],
+            ["hn", "THNGV"],
             ["tl", "Tanglish"],
             ["en", "English"],
             ["both", "All"],

@@ -1,19 +1,21 @@
 export const TRANSLATION_OPTIONS = [
   { id: "bsi-ov", label: "தமிழ் O.V." },
+  { id: "thngv", label: "THNGV" },
   { id: "tanglish", label: "Tanglish" },
   { id: "kjv", label: "English KJV" },
 ] as const;
 
 export function isTamilScript(translationId: string): boolean {
-  return translationId === "bsi-ov";
+  return translationId === "bsi-ov" || translationId === "thngv";
 }
 
 export function translationUiLanguage(translationId: string): "en" | "ta" {
-  return translationId === "bsi-ov" ? "ta" : "en";
+  return isTamilScript(translationId) ? "ta" : "en";
 }
 
 export function translationLabel(translationId: string): string {
   if (translationId === "bsi-ov") return "Tamil O.V.";
+  if (translationId === "thngv") return "THNGV";
   if (translationId === "tanglish") return "Tanglish";
   if (translationId === "kjv") return "KJV";
   return TRANSLATION_OPTIONS.find((option) => option.id === translationId)?.label ?? translationId;

@@ -14,6 +14,7 @@ dist-ssr
 public/bible-data
 tmp-tanglish
 tmp-strongs
+tmp-thngv
 
 # Android / Bubblewrap
 android-twa/.gradle

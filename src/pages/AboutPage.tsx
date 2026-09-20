@@ -23,6 +23,10 @@ export function AboutPage() {
           <p className="mt-2 whitespace-pre-line text-muted">{LICENSES.tanglish.licenseDetails}</p>
         </article>
         <article className="rounded-3xl bg-white/80 p-4 dark:bg-white/5">
+          <h3 className="font-semibold">{LICENSES.thngv.name}</h3>
+          <p className="mt-2 whitespace-pre-line text-muted">{LICENSES.thngv.licenseDetails}</p>
+        </article>
+        <article className="rounded-3xl bg-white/80 p-4 dark:bg-white/5">
           <h3 className="font-semibold">{LICENSES.strongs.name}</h3>
           <p className="mt-2 whitespace-pre-line text-muted">{LICENSES.strongs.licenseDetails}</p>
         </article>

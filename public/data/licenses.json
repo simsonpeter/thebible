@@ -24,6 +24,12 @@
       "source": "https://github.com/yesudas/all-bible-databases/tree/main/Bibles/Tamil-Bible-Database-and-Software-Modules/Tanglish"
     },
     {
+      "id": "thngv",
+      "name": "Hebrew Names of God Version (Tamil)",
+      "license": "Public Domain. Not BSI Tamil O.V. New Ortho.",
+      "source": "https://github.com/yesudas/tamil-bible-hebrew-names-of-god-version"
+    },
+    {
       "id": "strongs",
       "name": "Strong Dictionary",
       "license": "Public-domain Tamil Strong's wording. MIT covers the source repository packaging.",

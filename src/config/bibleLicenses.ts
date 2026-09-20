@@ -35,6 +35,16 @@ export const bibleLicenses = {
     publisherText:
       "https://github.com/yesudas/all-bible-databases/tree/main/Bibles/Tamil-Bible-Database-and-Software-Modules/Tanglish",
   },
+  thngv: {
+    id: "thngv",
+    name: "Hebrew Names of God Version (Tamil)",
+    abbreviation: "THNGV",
+    language: "ta" as const,
+    copyrightText: "Public Domain. Not BSI Tamil O.V. New Ortho.",
+    permissionText:
+      "Hebrew Names of God Version in Tamil (THNGV) from https://github.com/yesudas/tamil-bible-hebrew-names-of-god-version. Restored and edited by Pastor Paul Jonathan. The base Tamil wording is the Henry Bower translation published in 1871. Hebrew names of God are restored in Tamil and English. The repository states this edition is public domain, may be copied and shared unchanged, and may not be sold. NJC Bible App does not present this text as authorized BSI New Ortho.",
+    publisherText: "Pastor Paul Jonathan & Word of God Team. https://github.com/yesudas/tamil-bible-hebrew-names-of-god-version",
+  },
 };
 
 export function bsiNoticeFromConfig(): string {

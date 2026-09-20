@@ -1,4 +1,5 @@
 import { formatRange } from "@/utils/reference";
+import { translationUiLanguage } from "@/config/translations";
 import type { BookmarkRecord } from "@/types/userData";
 import { Card } from "@/components/ui/Card";
 
@@ -23,7 +24,7 @@ export function BookmarkCard({
           bookmark.chapter,
           bookmark.verseStart,
           bookmark.verseEnd,
-          bookmark.translationId === "bsi-ov" ? "ta" : "en",
+          translationUiLanguage(bookmark.translationId),
         )}
       </p>
       <div className="mt-3 flex gap-2">

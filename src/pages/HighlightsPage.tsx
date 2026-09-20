@@ -5,6 +5,7 @@ import { Card } from "@/components/ui/Card";
 import { db } from "@/db";
 import { removeHighlight } from "@/services/highlightService";
 import { formatReference } from "@/utils/reference";
+import { isTamilScript, translationUiLanguage } from "@/config/translations";
 
 export function HighlightsPage() {
   const rows = useLiveQuery(() => db.highlights.orderBy("createdAt").reverse().toArray(), []) ?? [];
@@ -16,8 +17,8 @@ export function HighlightsPage() {
         {rows.map((row) => (
           <Card key={row.verseId}>
             <p className="text-xs capitalize text-gold">{row.color}</p>
-            <h3 className={row.translationId === "bsi-ov" ? "tamil font-semibold" : "font-semibold"}>
-              {formatReference(row.bookId, row.chapter, row.verseNumber, row.translationId === "bsi-ov" ? "ta" : "en")}
+            <h3 className={isTamilScript(row.translationId) ? "tamil font-semibold" : "font-semibold"}>
+              {formatReference(row.bookId, row.chapter, row.verseNumber, translationUiLanguage(row.translationId))}
             </h3>
             <div className="mt-3 flex gap-2">
               <button

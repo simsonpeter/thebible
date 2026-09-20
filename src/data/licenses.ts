@@ -42,6 +42,16 @@ export const LICENSES = {
     source: bibleLicenses.tanglish.publisherText,
     year: 2019,
   },
+  thngv: {
+    id: bibleLicenses.thngv.id,
+    name: bibleLicenses.thngv.name,
+    abbreviation: bibleLicenses.thngv.abbreviation,
+    language: bibleLicenses.thngv.language,
+    license: bibleLicenses.thngv.copyrightText,
+    licenseDetails: bibleLicenses.thngv.permissionText,
+    source: bibleLicenses.thngv.publisherText,
+    year: 2026,
+  },
   strongs: {
     name: "Strong Dictionary",
     abbreviation: "Hebrew/Greek",

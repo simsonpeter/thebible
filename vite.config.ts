@@ -41,6 +41,7 @@ export default defineConfig({
         "bible-data/bsi-ov/bsi-ov.json",
         "bible-data/bsi-ov/sample.json",
         "bible-data/tanglish/tanglish.json",
+        "bible-data/thngv/thngv.json",
         "bible-data/strongs/strongs.json",
         "data/kjv-source.json",
         "data/bsi-ov.sample.json",

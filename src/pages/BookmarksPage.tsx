@@ -7,6 +7,7 @@ import { db } from "@/db";
 import { deleteBookmark, updateBookmark } from "@/services/bookmarkService";
 import { shareOrCopy } from "@/services/shareService";
 import { formatRange } from "@/utils/reference";
+import { translationUiLanguage } from "@/config/translations";
 import { Modal } from "@/components/ui/Modal";
 import { Button } from "@/components/ui/Button";
 import { DEFAULT_BOOKMARK_CATEGORIES } from "@/types/userData";
@@ -22,12 +23,13 @@ export function BookmarksPage() {
 
   const categories = useMemo(() => {
     const extras = rows.map((row) => row.category).filter(Boolean);
-    return ["All", "Tamil", "Tanglish", "English", ...new Set([...DEFAULT_BOOKMARK_CATEGORIES, ...extras])];
+    return ["All", "Tamil", "THNGV", "Tanglish", "English", ...new Set([...DEFAULT_BOOKMARK_CATEGORIES, ...extras])];
   }, [rows]);
 
   const visible = useMemo(() => {
     return rows.filter((row) => {
-      if (filter === "Tamil") return row.translationId === "bsi-ov";
+      if (filter === "Tamil") return row.translationId === "bsi-ov" || row.translationId === "thngv";
+      if (filter === "THNGV") return row.translationId === "thngv";
       if (filter === "Tanglish") return row.translationId === "tanglish";
       if (filter === "English") return row.translationId === "kjv";
       if (filter === "All") return true;
@@ -68,7 +70,7 @@ export function BookmarksPage() {
                     bookmark.chapter,
                     bookmark.verseStart,
                     bookmark.verseEnd,
-                    bookmark.translationId === "bsi-ov" ? "ta" : "en",
+                    translationUiLanguage(bookmark.translationId),
                   ),
                 )
               }

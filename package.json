@@ -12,6 +12,7 @@
     "icons": "node scripts/rasterize-icons.mjs",
     "prepare:tamil": "node scripts/prepare-tamil-ov.mjs",
     "prepare:tanglish": "node scripts/prepare-tanglish.mjs",
+    "prepare:thngv": "node scripts/prepare-thngv.mjs",
     "prepare:strongs": "python scripts/prepare-strongs.py",
     "apk": "bubblewrap update --manifest android-twa && bubblewrap build --skipPwaValidation --manifest android-twa"
   },
