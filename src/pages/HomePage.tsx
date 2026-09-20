@@ -124,11 +124,11 @@ export function HomePage() {
         ))}
       </div>
 
-      <Card className="mb-4" onClick={() => navigate("/sermons")}>
+      <Card className="mb-4" onClick={() => navigate("/notes")}>
         <p className="text-xs tracking-[0.25em] text-gold uppercase">Notes</p>
         <h2 className="mt-2 font-semibold">Your personal notes</h2>
         <p className="mt-1 text-sm text-muted">
-          {sermonCount ? `${sermonCount} notebook${sermonCount === 1 ? "" : "s"} on this phone` : "Collect verses, write the outline, then share to Google Drive."}
+          {noteCount ? `${noteCount} note${noteCount === 1 ? "" : "s"} on this phone` : "Verse notes you write while reading."}
         </p>
       </Card>
 
