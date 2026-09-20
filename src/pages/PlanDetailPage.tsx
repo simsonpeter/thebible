@@ -63,7 +63,7 @@ export function PlanDetailPage() {
         detail={`${completed} completed`}
       />
       {current ? (
-        <section className="mt-4 rounded-3xl bg-[#12263A] p-5 text-white">
+        <section className="mt-4 rounded-3xl bg-[#12263A] p-5 text-white dark:bg-[#1d3b5a]">
           <p className="text-xs tracking-[0.25em] text-[#e8d5a3] uppercase">Read today</p>
           <h2 className="mt-2 text-xl font-semibold">Day {current.day}</h2>
           <p className="mt-1 text-sm text-white/80">{current.label}</p>

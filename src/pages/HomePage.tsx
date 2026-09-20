@@ -124,13 +124,17 @@ export function HomePage() {
         ))}
       </div>
 
-      <Card className="mb-4" onClick={() => navigate(`/reading-plans/${planInfo.id}`)}>
-        <p className="text-xs tracking-[0.25em] text-gold uppercase">Reading Plan</p>
-        <h3 className="mt-2 font-semibold">{planInfo.name}</h3>
-        <p className="mt-1 text-sm text-muted">
+      <button
+        type="button"
+        className="mb-4 w-full rounded-3xl bg-[#12263A] p-5 text-left text-white dark:bg-[#1d3b5a]"
+        onClick={() => navigate(`/reading-plans/${planInfo.id}`)}
+      >
+        <p className="text-xs tracking-[0.25em] text-[#e8d5a3] uppercase">Reading Plan</p>
+        <h3 className="mt-2 text-2xl font-semibold text-white">{planInfo.name}</h3>
+        <p className="mt-1 text-sm text-white/80">
           Day {planInfo.day} / {planInfo.total}
         </p>
-      </Card>
+      </button>
 
       <section>
         <div className="mb-3 flex items-center justify-between">
