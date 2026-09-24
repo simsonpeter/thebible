@@ -3,6 +3,7 @@ import { HIGHLIGHT_COLORS } from "@/services/highlightService";
 import type { HighlightColor } from "@/types/userData";
 
 const actions = [
+  { id: "listen", label: "Listen" },
   { id: "copy", label: "Copy" },
   { id: "share", label: "Share" },
   { id: "bookmark", label: "Bookmark" },

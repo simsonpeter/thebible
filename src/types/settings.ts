@@ -25,6 +25,8 @@ export interface AppSettings {
   distractionFree: boolean;
   rememberPosition: boolean;
   wakeLock: boolean;
+  /** Web Speech playback rate (roughly 0.6–1.5). */
+  ttsRate: number;
   lastBookId: string;
   lastChapter: number;
   lastVerse: number;
@@ -63,6 +65,7 @@ export const DEFAULT_SETTINGS: AppSettings = {
   distractionFree: false,
   rememberPosition: true,
   wakeLock: false,
+  ttsRate: 1,
   lastBookId: "john",
   lastChapter: 3,
   lastVerse: 1,

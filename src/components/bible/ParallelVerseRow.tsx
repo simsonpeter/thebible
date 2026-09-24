@@ -10,6 +10,7 @@ export function ParallelVerseRow({
   layout,
   showNumber,
   selected,
+  speaking,
   onActivate,
   onLongPress,
 }: {
@@ -19,13 +20,18 @@ export function ParallelVerseRow({
   layout: "stacked" | "columns";
   showNumber: boolean;
   selected?: boolean;
+  speaking?: boolean;
   onActivate: () => void;
   onLongPress: () => void;
 }) {
   return (
     <article
       id={`v-${number}`}
-      className={cn("rounded-2xl p-2", selected && "ring-2 ring-gold/70")}
+      className={cn(
+        "rounded-2xl p-2",
+        selected && "ring-2 ring-gold/70",
+        speaking && "bg-gold-soft/50 ring-2 ring-gold dark:bg-gold/15",
+      )}
       style={{ marginBottom: "var(--verse-gap)" }}
       onClick={onActivate}
       onContextMenu={(event) => {

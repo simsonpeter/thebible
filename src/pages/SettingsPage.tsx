@@ -14,6 +14,7 @@ import { TranslationLanguagePicker } from "@/components/bible/TranslationSelecto
 import { toggleParallelTranslation } from "@/config/translations";
 import type { TranslationId } from "@/types/bible";
 import { useAuth } from "@/hooks/useAuth";
+import { TTS_RATE_OPTIONS } from "@/services/ttsService";
 
 export function SettingsPage() {
   const { settings, update } = useSettings();
@@ -193,6 +194,17 @@ export function SettingsPage() {
         </Row>
         <Row label="Keep screen awake">
           <Toggle value={settings.wakeLock} onChange={(value) => void update({ wakeLock: value })} />
+        </Row>
+        <Row label="Listen speed">
+          {TTS_RATE_OPTIONS.map((option) => (
+            <Chip
+              key={option.value}
+              active={settings.ttsRate === option.value}
+              onClick={() => void update({ ttsRate: option.value })}
+            >
+              {option.label}
+            </Chip>
+          ))}
         </Row>
         <div className="p-4">
           <Button variant="secondary" onClick={() => void clearHistory().then(() => push("History cleared", "success"))}>

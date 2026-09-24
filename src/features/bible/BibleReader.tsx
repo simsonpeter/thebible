@@ -16,6 +16,7 @@ import { db } from "@/db";
 import { useSettings } from "@/hooks/useSettings";
 import { useToast } from "@/hooks/useToast";
 import { useWakeLock } from "@/hooks/useWakeLock";
+import { useBibleAudio } from "@/hooks/useBibleAudio";
 import { isTamilScript, toggleParallelTranslation, translationUiLanguage } from "@/config/translations";
 import {
   adjacentChapter,
@@ -184,6 +185,43 @@ export function BibleReader() {
     [mode, pairs, verses],
   );
 
+  const audioVerses = useMemo(() => {
+    if (mode === "parallel") {
+      const preferred =
+        parallelIds.find((id) => isTamilScript(id)) ?? parallelIds[0] ?? translationId;
+      return pairs
+        .map((pair) => {
+          const verse = pair.byId[preferred] ?? parallelIds.map((id) => pair.byId[id]).find(Boolean);
+          if (!verse || verse.isPlaceholder || !verse.text.trim()) return null;
+          return { number: pair.number, text: verse.text, translationId: verse.translationId };
+        })
+        .filter((item): item is { number: number; text: string; translationId: string } => Boolean(item));
+    }
+    return verses
+      .filter((verse) => !verse.isPlaceholder && verse.text.trim())
+      .map((verse) => ({ number: verse.number, text: verse.text, translationId: verse.translationId }));
+  }, [mode, pairs, verses, parallelIds, translationId]);
+
+  const audioChapterKey = `${mode === "parallel" ? parallelIds.join("+") || translationId : translationId}:${bookId}:${chapter}`;
+
+  const {
+    status: audioStatus,
+    currentVerse: speakingVerse,
+    supported: audioSupported,
+    play: playAudio,
+    stop: stopAudio,
+    toggle: toggleAudio,
+  } = useBibleAudio({
+    chapterKey: audioChapterKey,
+    verses: audioVerses,
+    rate: settings.ttsRate,
+  });
+
+  useEffect(() => {
+    if (speakingVerse == null) return;
+    document.getElementById(`v-${speakingVerse}`)?.scrollIntoView({ behavior: "smooth", block: "center" });
+  }, [speakingVerse]);
+
   const selectedVerse = useMemo(() => {
     if (!range) return undefined;
     if (mode === "parallel") {
@@ -340,6 +378,17 @@ export function BibleReader() {
     const text = verse?.text ?? "";
     const verseLanguage = translationUiLanguage(verse?.translationId ?? translationId);
     const shareText = selectedShareText();
+    if (action === "listen") {
+      if (!audioSupported) {
+        push("Text-to-speech is not available on this device", "error");
+      } else if (!audioVerses.length) {
+        push("Nothing to read aloud for this chapter", "info");
+      } else {
+        playAudio(range.start);
+      }
+      setMenuOpen(false);
+      return;
+    }
     if (action === "copy") {
       await copyText(shareText);
       push(selectedCount > 1 ? "Verses copied" : "Copied", "success");
@@ -444,6 +493,30 @@ export function BibleReader() {
             <BookSelector value={bookId} language={language} onChange={changeBook} />
             <ChapterSelector bookId={bookId} value={chapter} language={language} onChange={changeChapter} />
             <ModeToggle value={mode} onChange={changeMode} />
+            {audioSupported ? (
+              <div className="inline-flex rounded-full bg-navy/8 p-0.5 dark:bg-white/10" role="group" aria-label="Listen">
+                <button
+                  type="button"
+                  className="min-h-9 px-3 text-xs font-semibold"
+                  aria-label={audioStatus === "playing" ? "Pause listening" : audioStatus === "paused" ? "Resume listening" : "Listen to chapter"}
+                  disabled={!audioVerses.length}
+                  onClick={() => {
+                    if (!audioVerses.length) {
+                      push("Nothing to read aloud for this chapter", "info");
+                      return;
+                    }
+                    toggleAudio();
+                  }}
+                >
+                  {audioStatus === "playing" ? "Pause" : audioStatus === "paused" ? "Resume" : "Listen"}
+                </button>
+                {audioStatus !== "idle" && audioStatus !== "unsupported" ? (
+                  <button type="button" className="min-h-9 px-3 text-xs font-semibold" aria-label="Stop listening" onClick={stopAudio}>
+                    Stop
+                  </button>
+                ) : null}
+              </div>
+            ) : null}
             <div className="inline-flex rounded-full bg-navy/8 p-0.5 dark:bg-white/10" role="group" aria-label="Font size">
               <button type="button" className="min-h-9 min-w-9 text-xs" aria-label="Decrease font size" onClick={() => bumpFont(-1)}>
                 A-
@@ -515,6 +588,7 @@ export function BibleReader() {
                 language={language}
                 highlight={highlights.get(verse.id)?.color}
                 selected={Boolean(range && verse.number >= range.start && verse.number <= range.end)}
+                speaking={speakingVerse === verse.number}
                 continuous={!settings.verseByVerse}
                 serif={language === "ta" ? settings.tamilFont === "serif" : settings.englishFont === "serif"}
                 onActivate={() => selectVerse(verse.number)}
@@ -530,6 +604,7 @@ export function BibleReader() {
                 layout={layout}
                 showNumber={settings.showVerseNumbers}
                 selected={Boolean(range && pair.number >= range.start && pair.number <= range.end)}
+                speaking={speakingVerse === pair.number}
                 onActivate={() => selectVerse(pair.number)}
                 onLongPress={() => openMenu(pair.number)}
               />
@@ -557,6 +632,20 @@ export function BibleReader() {
               </span>
             </p>
             <div className="flex flex-wrap gap-2">
+              <Button
+                variant="secondary"
+                disabled={!audioSupported || !audioVerses.length}
+                onClick={() => {
+                  if (!range) return;
+                  if (!audioSupported) {
+                    push("Text-to-speech is not available on this device", "error");
+                    return;
+                  }
+                  playAudio(range.start);
+                }}
+              >
+                Listen
+              </Button>
               <Button variant="secondary" onClick={() => void handleAction("copy")}>
                 Copy
               </Button>

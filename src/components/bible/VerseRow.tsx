@@ -16,6 +16,7 @@ export function VerseRow({
   language,
   highlight,
   selected,
+  speaking,
   continuous,
   serif,
   onActivate,
@@ -26,6 +27,7 @@ export function VerseRow({
   language: "en" | "ta";
   highlight?: HighlightColor;
   selected?: boolean;
+  speaking?: boolean;
   continuous?: boolean;
   serif?: boolean;
   onActivate: () => void;
@@ -41,6 +43,7 @@ export function VerseRow({
         serif && language === "en" && "english-serif",
         highlight && highlightClass[highlight],
         selected && "ring-2 ring-gold/70",
+        speaking && "bg-gold-soft/50 ring-2 ring-gold dark:bg-gold/15",
         continuous ? "inline" : "block",
       )}
       style={{
