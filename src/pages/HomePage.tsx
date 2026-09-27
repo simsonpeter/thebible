@@ -66,7 +66,7 @@ export function HomePage() {
       text: daily.text,
       language: dailyLanguage,
     });
-    const result = await shareOrCopy("NJC Bible App — Verse of the day", text);
+    const result = await shareOrCopy("NJC Bible App — Promise of the day", text);
     if (result === "copied") push("Verse copied", "success");
   }
 
@@ -108,7 +108,7 @@ export function HomePage() {
 
       {daily ? (
         <section className="mb-4 rounded-3xl border border-navy/10 bg-white/80 p-5 dark:border-white/10 dark:bg-white/5">
-          <p className="text-xs tracking-[0.25em] text-gold uppercase">Verse of the day</p>
+          <p className="text-xs tracking-[0.25em] text-gold uppercase">Promise of the day</p>
           <p className="mt-2 text-sm font-semibold text-muted">
             {formatReference(daily.bookId, daily.chapter, daily.number, dailyLanguage)}
           </p>

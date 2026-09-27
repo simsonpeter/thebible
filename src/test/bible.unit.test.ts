@@ -1,7 +1,8 @@
 import { describe, expect, it } from "vitest";
 import { parseReference } from "@/utils/referenceParser";
 import { parseVerseId, syncKey, verseId } from "@/utils/text";
-import { dailyIndex } from "@/services/dailyVerse";
+import { dailyIndex, getPromiseOfTheDayRef } from "@/services/dailyVerse";
+import { PROMISE_VERSES } from "@/data/promiseVerses";
 import { formatParallelRangeShare, formatParallelShare, formatPairShare, formatReferenceOnly, formatVerseShare, formatVersesPlain, formatVersesShare } from "@/services/shareService";
 import { validateBibleImport } from "@/services/bibleValidation";
 import { BOOK_CATALOG, bookDisplayName, compareByBibleOrder } from "@/data/books";
@@ -106,6 +107,16 @@ describe("daily verse", () => {
   it("is deterministic for a date", () => {
     expect(dailyIndex(31102, "2026-09-18", 0)).toBe(dailyIndex(31102, "2026-09-18", 0));
     expect(dailyIndex(31102, "2026-09-18", 0)).not.toBe(dailyIndex(31102, "2026-09-19", 0));
+  });
+
+  it("picks a curated promise ref for the day", () => {
+    expect(PROMISE_VERSES.length).toBeGreaterThan(100);
+    const a = getPromiseOfTheDayRef(0, "2026-09-18");
+    const b = getPromiseOfTheDayRef(0, "2026-09-18");
+    const c = getPromiseOfTheDayRef(0, "2026-09-19");
+    expect(a).toEqual(b);
+    expect(a).not.toEqual(c);
+    expect(PROMISE_VERSES).toContainEqual(a);
   });
 });
 
