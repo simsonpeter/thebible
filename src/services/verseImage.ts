@@ -12,6 +12,9 @@ export type VerseImageTemplate =
   | "gradient"
   | "elegant";
 
+export type VerseImageAlign = "left" | "center" | "right";
+export type VerseImageVerticalAlign = "top" | "middle" | "bottom";
+
 export interface VerseImageOptions {
   template: VerseImageTemplate;
   bookId: string;
@@ -20,7 +23,14 @@ export interface VerseImageOptions {
   text: string;
   language: "en" | "ta";
   fontSize: number;
-  align?: CanvasTextAlign;
+  /** Horizontal text alignment. */
+  align?: VerseImageAlign;
+  /** Vertical placement of the verse block. */
+  verticalAlign?: VerseImageVerticalAlign;
+  /** Extra horizontal shift as % of canvas width (−40 … 40). */
+  offsetX?: number;
+  /** Extra vertical shift as % of canvas height (−40 … 40). */
+  offsetY?: number;
   width?: number;
   height?: number;
   /** Small label above the reference, e.g. "Promise of the day". */
@@ -276,14 +286,67 @@ export async function renderVerseImage(options: VerseImageOptions): Promise<HTML
 
   const theme = TEMPLATES[options.template];
   fillBackground(ctx, options.template, width, height);
-  const align = options.align ?? (options.template === "promise" ? "center" : "left");
-  ctx.textAlign = align;
-  const x = align === "center" ? width / 2 : align === "right" ? width - 90 : 90;
 
-  // Soft card panel for readability on scenic backgrounds
-  if (options.template === "promise" || options.template === "sunrise" || options.template === "sky" || options.template === "nature" || options.template === "mountains") {
-    ctx.fillStyle = "rgba(10, 18, 30, 0.38)";
-    roundRect(ctx, 64, 160, width - 128, height - 320, 36);
+  const align: VerseImageAlign =
+    options.align === "left" || options.align === "right" || options.align === "center"
+      ? options.align
+      : options.template === "promise"
+        ? "center"
+        : "left";
+  const verticalAlign: VerseImageVerticalAlign = options.verticalAlign ?? "middle";
+  const offsetX = clampOffset(options.offsetX ?? 0);
+  const offsetY = clampOffset(options.offsetY ?? 0);
+
+  const marginX = 90;
+  const contentWidth = width - marginX * 2;
+  const x =
+    align === "center"
+      ? width / 2 + (width * offsetX) / 100
+      : align === "right"
+        ? width - marginX + (width * offsetX) / 100
+        : marginX + (width * offsetX) / 100;
+
+  ctx.textAlign = align;
+
+  const reference = formatReference(options.bookId, options.chapter, options.verse, options.language);
+  const fontFamily =
+    options.language === "ta"
+      ? '"Noto Sans Tamil", "Nirmala UI", sans-serif'
+      : '"Source Serif 4", Georgia, serif';
+  const eyebrow = options.eyebrow ?? (options.template === "promise" ? "Promise of the day" : "NJC Bible App");
+
+  ctx.font = `${options.fontSize}px ${fontFamily}`;
+  const bodyLines = wrapText(ctx, options.text, contentWidth).slice(0, 16);
+  const lineHeight = options.fontSize * 1.45;
+  const eyebrowH = 26;
+  const gap1 = 28;
+  const refH = 40;
+  const gap2 = 36;
+  const bodyH = bodyLines.length * lineHeight;
+  const blockHeight = eyebrowH + gap1 + refH + gap2 + bodyH;
+
+  const topSafe = 100;
+  const bottomSafe = 130;
+  const usable = height - topSafe - bottomSafe;
+  let blockTop =
+    verticalAlign === "top"
+      ? topSafe
+      : verticalAlign === "bottom"
+        ? height - bottomSafe - blockHeight
+        : topSafe + (usable - blockHeight) / 2;
+  blockTop += (height * offsetY) / 100;
+  blockTop = Math.max(topSafe * 0.4, Math.min(blockTop, height - bottomSafe - blockHeight * 0.5));
+
+  if (
+    options.template === "promise" ||
+    options.template === "sunrise" ||
+    options.template === "sky" ||
+    options.template === "nature" ||
+    options.template === "mountains"
+  ) {
+    const pad = 48;
+    ctx.fillStyle = "rgba(10, 18, 30, 0.4)";
+    roundRect(ctx, 64, blockTop - pad, width - 128, blockHeight + pad * 2, 36);
     ctx.fill();
   }
 
@@ -295,36 +358,34 @@ export async function renderVerseImage(options: VerseImageOptions): Promise<HTML
     ctx.globalAlpha = 1;
   }
 
-  const reference = formatReference(options.bookId, options.chapter, options.verse, options.language);
-  const fontFamily =
-    options.language === "ta"
-      ? '"Noto Sans Tamil", "Nirmala UI", sans-serif'
-      : '"Source Serif 4", Georgia, serif';
-
-  let y = 220;
+  let y = blockTop + eyebrowH;
   ctx.fillStyle = theme.muted;
   ctx.font = `600 26px Inter, sans-serif`;
-  const eyebrow = options.eyebrow ?? (options.template === "promise" ? "Promise of the day" : "NJC Bible App");
   ctx.fillText(eyebrow.toUpperCase(), x, y);
 
-  y += 70;
+  y += gap1 + refH;
   ctx.fillStyle = theme.accent;
   ctx.font = `600 40px Inter, sans-serif`;
   ctx.fillText(reference, x, y);
 
-  y += 90;
+  y += gap2;
   ctx.fillStyle = theme.text;
   ctx.font = `${options.fontSize}px ${fontFamily}`;
-  const lines = wrapText(ctx, options.text, width - 220);
-  for (const line of lines.slice(0, 16)) {
+  for (const line of bodyLines) {
+    y += lineHeight;
     ctx.fillText(line, x, y);
-    y += options.fontSize * 1.45;
   }
 
   ctx.fillStyle = theme.muted;
   ctx.font = `24px Inter, sans-serif`;
-  ctx.fillText("NJC Bible App", x, height - 90);
+  ctx.textAlign = "center";
+  ctx.fillText("NJC Bible App", width / 2, height - 56);
   return canvas;
+}
+
+function clampOffset(value: number): number {
+  if (!Number.isFinite(value)) return 0;
+  return Math.max(-40, Math.min(40, value));
 }
 
 function roundRect(

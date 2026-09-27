@@ -6,11 +6,14 @@ import {
   canvasToBlob,
   renderVerseImage,
   shareVerseImage,
+  type VerseImageAlign,
   type VerseImageTemplate,
+  type VerseImageVerticalAlign,
 } from "@/services/verseImage";
 import { getDailyVersePair } from "@/services/dailyVerse";
 import { useToast } from "@/hooks/useToast";
 import { shareOrCopy } from "@/services/shareService";
+import { cn } from "@/utils/misc";
 
 const templates: VerseImageTemplate[] = [
   "promise",
@@ -23,6 +26,18 @@ const templates: VerseImageTemplate[] = [
   "minimal",
   "gradient",
   "elegant",
+];
+
+const POSITIONS: Array<{ align: VerseImageAlign; vertical: VerseImageVerticalAlign; label: string }> = [
+  { align: "left", vertical: "top", label: "Top left" },
+  { align: "center", vertical: "top", label: "Top" },
+  { align: "right", vertical: "top", label: "Top right" },
+  { align: "left", vertical: "middle", label: "Middle left" },
+  { align: "center", vertical: "middle", label: "Center" },
+  { align: "right", vertical: "middle", label: "Middle right" },
+  { align: "left", vertical: "bottom", label: "Bottom left" },
+  { align: "center", vertical: "bottom", label: "Bottom" },
+  { align: "right", vertical: "bottom", label: "Bottom right" },
 ];
 
 interface VerseState {
@@ -42,7 +57,10 @@ export function VerseImagePage() {
   const [verse, setVerse] = useState<VerseState | null>(incoming);
   const [template, setTemplate] = useState<VerseImageTemplate>(incoming?.template ?? "promise");
   const [fontSize, setFontSize] = useState(incoming?.language === "ta" ? 40 : 46);
-  const [align, setAlign] = useState<CanvasTextAlign>("center");
+  const [align, setAlign] = useState<VerseImageAlign>("center");
+  const [verticalAlign, setVerticalAlign] = useState<VerseImageVerticalAlign>("middle");
+  const [offsetX, setOffsetX] = useState(0);
+  const [offsetY, setOffsetY] = useState(0);
   const [preview, setPreview] = useState<string>("");
   const eyebrow = verse?.eyebrow ?? (template === "promise" ? "Promise of the day" : undefined);
 
@@ -73,6 +91,9 @@ export function VerseImagePage() {
       template,
       fontSize,
       align,
+      verticalAlign,
+      offsetX,
+      offsetY,
       eyebrow,
     }).then((canvas) => {
       url = canvas.toDataURL("image/png");
@@ -81,25 +102,29 @@ export function VerseImagePage() {
     return () => {
       if (url.startsWith("blob:")) URL.revokeObjectURL(url);
     };
-  }, [verse, template, fontSize, align, eyebrow]);
+  }, [verse, template, fontSize, align, verticalAlign, offsetX, offsetY, eyebrow]);
+
+  const imageOptions = verse
+    ? { ...verse, template, fontSize, align, verticalAlign, offsetX, offsetY, eyebrow }
+    : null;
 
   async function download() {
-    if (!verse) return;
-    const canvas = await renderVerseImage({ ...verse, template, fontSize, align, eyebrow });
+    if (!imageOptions) return;
+    const canvas = await renderVerseImage(imageOptions);
     const blob = await canvasToBlob(canvas);
     const url = URL.createObjectURL(blob);
     const anchor = document.createElement("a");
     anchor.href = url;
-    anchor.download = `njc-bible-${verse.bookId}-${verse.chapter}-${verse.verse}.png`;
+    anchor.download = `njc-bible-${verse!.bookId}-${verse!.chapter}-${verse!.verse}.png`;
     anchor.click();
     URL.revokeObjectURL(url);
     push("Image downloaded", "success");
   }
 
   async function share() {
-    if (!verse) return;
+    if (!imageOptions || !verse) return;
     try {
-      const result = await shareVerseImage({ ...verse, template, fontSize, align, eyebrow });
+      const result = await shareVerseImage(imageOptions);
       if (result === "downloaded") push("Image saved — open it to share", "success");
       else push("Shared", "success");
     } catch {
@@ -109,7 +134,7 @@ export function VerseImagePage() {
   }
 
   return (
-    <Page title="Verse image" subtitle="Promise cards created on this device" back>
+    <Page title="Verse image" subtitle="Place text anywhere on the card" back>
       <div className="mb-4 flex flex-wrap gap-2">
         {templates.map((item) => (
           <button
@@ -122,6 +147,7 @@ export function VerseImagePage() {
           </button>
         ))}
       </div>
+
       <label className="mb-4 block text-sm">
         Text size
         <input
@@ -133,18 +159,68 @@ export function VerseImagePage() {
           className="mt-2 w-full"
         />
       </label>
-      <div className="mb-4 flex flex-wrap gap-2" role="group" aria-label="Text alignment">
-        {(["left", "center", "right"] as CanvasTextAlign[]).map((item) => (
-          <button
-            key={item}
-            type="button"
-            className={`min-h-11 rounded-full px-3 capitalize ${align === item ? "bg-navy text-white" : "bg-paper-2 dark:bg-white/5"}`}
-            onClick={() => setAlign(item)}
-          >
-            {item}
-          </button>
-        ))}
+
+      <p className="mb-2 text-sm font-semibold">Position</p>
+      <div className="mb-4 grid grid-cols-3 gap-2" role="group" aria-label="Text position">
+        {POSITIONS.map((item) => {
+          const active = align === item.align && verticalAlign === item.vertical;
+          return (
+            <button
+              key={item.label}
+              type="button"
+              aria-label={item.label}
+              className={cn(
+                "min-h-12 rounded-2xl text-xs font-semibold",
+                active ? "bg-navy text-white" : "bg-paper-2 dark:bg-white/5",
+              )}
+              onClick={() => {
+                setAlign(item.align);
+                setVerticalAlign(item.vertical);
+              }}
+            >
+              {item.label}
+            </button>
+          );
+        })}
       </div>
+
+      <label className="mb-4 block text-sm">
+        Move sideways ({offsetX > 0 ? "+" : ""}
+        {offsetX}%)
+        <input
+          type="range"
+          min={-40}
+          max={40}
+          value={offsetX}
+          onChange={(event) => setOffsetX(Number(event.target.value))}
+          className="mt-2 w-full"
+        />
+      </label>
+      <label className="mb-4 block text-sm">
+        Move up / down ({offsetY > 0 ? "+" : ""}
+        {offsetY}%)
+        <input
+          type="range"
+          min={-40}
+          max={40}
+          value={offsetY}
+          onChange={(event) => setOffsetY(Number(event.target.value))}
+          className="mt-2 w-full"
+        />
+      </label>
+      <Button
+        variant="ghost"
+        className="mb-4"
+        onClick={() => {
+          setAlign("center");
+          setVerticalAlign("middle");
+          setOffsetX(0);
+          setOffsetY(0);
+        }}
+      >
+        Reset position
+      </Button>
+
       {preview ? (
         <img src={preview} alt="Generated verse image" className="w-full rounded-3xl border border-navy/10" />
       ) : (
