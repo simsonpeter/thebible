@@ -39,6 +39,7 @@ export function BookmarksPage() {
 
   return (
     <Page title="Bookmarks" back>
+      <p className="mb-2 text-xs font-semibold tracking-wide text-muted uppercase">Folders</p>
       <div className="mb-4 flex flex-wrap gap-2">
         {categories.map((item) => (
           <button
@@ -52,7 +53,7 @@ export function BookmarksPage() {
         ))}
       </div>
       <div className="grid gap-3">
-        {visible.length === 0 ? <p className="text-sm text-muted">No bookmarks in this category.</p> : null}
+        {visible.length === 0 ? <p className="text-sm text-muted">No bookmarks in this folder.</p> : null}
         {visible.map((bookmark) => (
           <div key={bookmark.id}>
             <BookmarkCard
@@ -97,7 +98,8 @@ export function BookmarksPage() {
           onChange={(event) => setTitle(event.target.value)}
           aria-label="Bookmark title"
         />
-        <div className="mt-3 grid grid-cols-2 gap-2">
+        <p className="mt-3 text-xs font-semibold tracking-wide text-muted uppercase">Folder</p>
+        <div className="mt-2 grid grid-cols-2 gap-2">
           {DEFAULT_BOOKMARK_CATEGORIES.map((item) => (
             <button
               key={item}
@@ -111,13 +113,13 @@ export function BookmarksPage() {
         </div>
         <input
           className="mt-3 min-h-12 w-full rounded-2xl border border-navy/10 px-3 dark:bg-white/5"
-          placeholder="Custom category"
+          placeholder="Custom folder"
           value={customCategory}
           onChange={(event) => {
             setCustomCategory(event.target.value);
             if (event.target.value.trim()) setCategory(event.target.value.trim());
           }}
-          aria-label="Custom category"
+          aria-label="Custom folder"
         />
         <Button
           className="mt-3 w-full"

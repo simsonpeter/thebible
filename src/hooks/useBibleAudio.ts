@@ -19,12 +19,15 @@ export interface AudioVerse {
 }
 
 interface UseBibleAudioOptions {
-  /** Stable key for the current chapter (e.g. `bsi-ov:john:3`). Stops playback when it changes. */
+  /** Stable key for the current chapter (e.g. `bsi-ov:john:3`). Stops playback when it changes, unless auto-next is pending. */
   chapterKey: string;
   verses: AudioVerse[];
   rate?: number;
-  /** When the last verse finishes, call this (e.g. go to next chapter). */
-  onChapterEnd?: () => void;
+  /**
+   * Called when the last verse finishes. Return true if navigation to the next chapter was started
+   * so playback can continue once the new verses load.
+   */
+  onChapterEnd?: () => boolean;
 }
 
 export function useBibleAudio({ chapterKey, verses, rate = 1, onChapterEnd }: UseBibleAudioOptions) {
@@ -40,6 +43,8 @@ export function useBibleAudio({ chapterKey, verses, rate = 1, onChapterEnd }: Us
   const indexRef = useRef(0);
   const activeRef = useRef(false);
   const generationRef = useRef(0);
+  const pendingContinueRef = useRef(false);
+  const continueTargetKeyRef = useRef<string | null>(null);
 
   versesRef.current = verses;
   rateRef.current = clampRate(rate);
@@ -48,6 +53,8 @@ export function useBibleAudio({ chapterKey, verses, rate = 1, onChapterEnd }: Us
   const stopInternal = useCallback((next: BibleAudioStatus = "idle") => {
     generationRef.current += 1;
     activeRef.current = false;
+    pendingContinueRef.current = false;
+    continueTargetKeyRef.current = null;
     cancelSpeech();
     setCurrentVerse(null);
     setStatus((prev) => (prev === "unsupported" ? prev : next));
@@ -56,10 +63,25 @@ export function useBibleAudio({ chapterKey, verses, rate = 1, onChapterEnd }: Us
   const speakAt = useCallback(async (index: number) => {
     const list = versesRef.current;
     if (!list.length || index < 0 || index >= list.length) {
+      if (list.length && index >= list.length && onChapterEndRef.current) {
+        pendingContinueRef.current = true;
+        continueTargetKeyRef.current = null;
+        setCurrentVerse(null);
+        setStatus("playing");
+        const continued = onChapterEndRef.current();
+        if (!continued) {
+          pendingContinueRef.current = false;
+          continueTargetKeyRef.current = null;
+          activeRef.current = false;
+          setStatus("idle");
+        }
+        return;
+      }
       activeRef.current = false;
+      pendingContinueRef.current = false;
+      continueTargetKeyRef.current = null;
       setCurrentVerse(null);
       setStatus("idle");
-      if (list.length && index >= list.length) onChapterEndRef.current?.();
       return;
     }
 
@@ -93,6 +115,7 @@ export function useBibleAudio({ chapterKey, verses, rate = 1, onChapterEnd }: Us
       onError: () => {
         if (gen !== generationRef.current) return;
         activeRef.current = false;
+        pendingContinueRef.current = false;
         setStatus("idle");
         setCurrentVerse(null);
       },
@@ -115,6 +138,7 @@ export function useBibleAudio({ chapterKey, verses, rate = 1, onChapterEnd }: Us
       }
 
       generationRef.current += 1;
+      pendingContinueRef.current = false;
       cancelSpeech();
       activeRef.current = true;
       void speakAt(index);
@@ -128,7 +152,6 @@ export function useBibleAudio({ chapterKey, verses, rate = 1, onChapterEnd }: Us
       setStatus("paused");
       return;
     }
-    // Some browsers (notably older Safari) do not pause — stop and keep verse for resume.
     cancelSpeech();
     setStatus("paused");
   }, [status]);
@@ -151,22 +174,41 @@ export function useBibleAudio({ chapterKey, verses, rate = 1, onChapterEnd }: Us
     else play();
   }, [status, pause, resume, play]);
 
-  // Stop when book / chapter / primary translation changes.
+  // Stop on chapter change unless auto-next is waiting for the next chapter's verses.
   useEffect(() => {
+    if (pendingContinueRef.current) {
+      continueTargetKeyRef.current = chapterKey;
+      return;
+    }
     stopInternal("idle");
   }, [chapterKey, stopInternal]);
 
+  // Resume at verse 1 once the next chapter's verses are ready (empty list means still loading).
+  const verseSignature = `${chapterKey}:${verses.length}:${verses[0]?.number ?? 0}:${verses[verses.length - 1]?.number ?? 0}`;
+  useEffect(() => {
+    if (!pendingContinueRef.current) return;
+    if (!verses.length) return;
+    if (continueTargetKeyRef.current !== chapterKey) return;
+    pendingContinueRef.current = false;
+    continueTargetKeyRef.current = null;
+    generationRef.current += 1;
+    activeRef.current = true;
+    void speakAt(0);
+  }, [verseSignature, verses.length, chapterKey, speakAt]);
+
   useEffect(() => () => stopInternal("idle"), [stopInternal]);
 
-  // Keep screen awake while speaking when the OS allows it (separate from settings toggle).
   useEffect(() => {
     if (status !== "playing" || !("wakeLock" in navigator)) return;
     let sentinel: WakeLockSentinel | undefined;
     let cancelled = false;
-    void navigator.wakeLock.request("screen").then((lock) => {
-      if (cancelled) void lock.release();
-      else sentinel = lock;
-    }).catch(() => undefined);
+    void navigator.wakeLock
+      .request("screen")
+      .then((lock) => {
+        if (cancelled) void lock.release();
+        else sentinel = lock;
+      })
+      .catch(() => undefined);
     return () => {
       cancelled = true;
       void sentinel?.release();
@@ -185,3 +227,11 @@ export function useBibleAudio({ chapterKey, verses, rate = 1, onChapterEnd }: Us
     toggle,
   };
 }
+
+export const SLEEP_TIMER_OPTIONS = [
+  { minutes: 0, label: "Off" },
+  { minutes: 15, label: "15m" },
+  { minutes: 30, label: "30m" },
+  { minutes: 45, label: "45m" },
+  { minutes: 60, label: "60m" },
+] as const;

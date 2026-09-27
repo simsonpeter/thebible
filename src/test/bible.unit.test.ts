@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 import { parseReference } from "@/utils/referenceParser";
 import { parseVerseId, syncKey, verseId } from "@/utils/text";
 import { dailyIndex } from "@/services/dailyVerse";
-import { formatParallelRangeShare, formatParallelShare, formatVerseShare, formatVersesShare } from "@/services/shareService";
+import { formatParallelRangeShare, formatParallelShare, formatPairShare, formatReferenceOnly, formatVerseShare, formatVersesPlain, formatVersesShare } from "@/services/shareService";
 import { validateBibleImport } from "@/services/bibleValidation";
 import { BOOK_CATALOG, bookDisplayName, compareByBibleOrder } from "@/data/books";
 import { orderParallelTranslations, resolveParallelSelection, toggleParallelTranslation, translationsByLanguage } from "@/config/translations";
@@ -135,6 +135,31 @@ describe("share format", () => {
         ],
       }),
     ).toContain("யோவான் 3:16-17");
+  });
+
+  it("supports reference-only, plain, and Tamil+English pair copy formats", () => {
+    expect(
+      formatReferenceOnly({ bookId: "john", chapter: 3, verseStart: 16, verseEnd: 17, language: "en" }),
+    ).toBe("John 3:16-17");
+    const plain = formatVersesPlain({
+      bookId: "john",
+      chapter: 3,
+      language: "en",
+      verses: [
+        { number: 16, text: "For God so loved the world." },
+        { number: 17, text: "For God sent not his Son." },
+      ],
+    });
+    expect(plain).toContain("John 3:16-17");
+    expect(plain).toContain("For God so loved the world. For God sent not his Son.");
+    expect(plain).not.toMatch(/\n16 /);
+    const pair = formatPairShare({
+      bookId: "john",
+      chapter: 3,
+      verses: [{ number: 16, tamil: "தேவன் இவ்வளவாய்", english: "For God so loved the world." }],
+    });
+    expect(pair).toContain("தமிழ்: தேவன் இவ்வளவாய்");
+    expect(pair).toContain("English: For God so loved the world.");
   });
 });
 

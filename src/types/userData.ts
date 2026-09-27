@@ -2,7 +2,7 @@ export type HighlightColor = "yellow" | "green" | "blue" | "pink" | "orange";
 
 export type BookmarkCategory = string;
 
-export const DEFAULT_BOOKMARK_CATEGORIES = ["Favorites", "Prayer", "Important", "Study"] as const;
+export const DEFAULT_BOOKMARK_CATEGORIES = ["Favorites", "Memory", "Sermon prep", "Prayer"] as const;
 
 export interface BookmarkRecord {
   id?: number;

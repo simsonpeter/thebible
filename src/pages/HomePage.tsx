@@ -7,20 +7,27 @@ import { Card } from "@/components/ui/Card";
 import { OfflineBadge } from "@/components/ui/OfflineBadge";
 import { useSettings } from "@/hooks/useSettings";
 import { useInstallPrompt } from "@/hooks/useInstallPrompt";
+import { useToast } from "@/hooks/useToast";
 import { listRecentHistory } from "@/services/historyService";
 import { listPlans, planProgress } from "@/services/planService";
+import { getDailyVersePair } from "@/services/dailyVerse";
 import { formatReference } from "@/utils/reference";
+import { formatVerseShare, shareOrCopy } from "@/services/shareService";
 import { cn } from "@/utils/misc";
 import { isTamilScript, translationUiLanguage } from "@/config/translations";
 import type { ReadingHistoryRecord } from "@/types/userData";
+import type { VerseRecord } from "@/types/bible";
 import { db } from "@/db";
 
 export function HomePage() {
   const navigate = useNavigate();
   const { settings } = useSettings();
   const { canInstall, install } = useInstallPrompt();
+  const { push } = useToast();
   const [recent, setRecent] = useState<ReadingHistoryRecord[]>([]);
   const [planInfo, setPlanInfo] = useState({ name: "Reading Plan", day: 1, total: 365, id: "njc-plan" });
+  const [dailyTamil, setDailyTamil] = useState<VerseRecord | undefined>();
+  const [dailyEnglish, setDailyEnglish] = useState<VerseRecord | undefined>();
   const bookmarkCount = useLiveQuery(() => db.bookmarks.count(), []) ?? 0;
   const noteCount = useLiveQuery(() => db.notes.count(), []) ?? 0;
   const sermonCount = useLiveQuery(() => db.sermons.count(), []) ?? 0;
@@ -28,7 +35,7 @@ export function HomePage() {
   const bsi = useLiveQuery(() => db.translations.get("bsi-ov"));
 
   useEffect(() => {
-    void listRecentHistory(5).then(setRecent);
+    void listRecentHistory(12).then(setRecent);
     void (async () => {
       const plans = await listPlans();
       const plan = plans.find((item) => item.id === "njc-plan") ?? plans.find((item) => item.id === "bible-1-year") ?? plans[0];
@@ -36,12 +43,32 @@ export function HomePage() {
       const progress = await planProgress(plan.id);
       setPlanInfo({ name: plan.name, day: progress.currentDay, total: progress.total, id: plan.id });
     })();
-  }, []);
+    void getDailyVersePair(settings.dailyVerseSalt).then((pair) => {
+      setDailyEnglish(pair.english);
+      setDailyTamil(pair.tamil);
+    });
+  }, [settings.dailyVerseSalt]);
 
   const continueBook = recent[0]?.bookId ?? settings.lastBookId;
   const continueChapter = recent[0]?.chapter ?? settings.lastChapter;
   const continueVerse = settings.lastVerse;
   const bsiReady = Boolean(bsi && !bsi.isDemo && bsi.verseCount > 0);
+  const recentStrip = recent.slice(1);
+  const daily = dailyTamil ?? dailyEnglish;
+  const dailyLanguage = dailyTamil ? ("ta" as const) : ("en" as const);
+
+  async function shareDaily() {
+    if (!daily) return;
+    const text = formatVerseShare({
+      bookId: daily.bookId,
+      chapter: daily.chapter,
+      verse: daily.number,
+      text: daily.text,
+      language: dailyLanguage,
+    });
+    const result = await shareOrCopy("NJC Bible App — Verse of the day", text);
+    if (result === "copied") push("Verse copied", "success");
+  }
 
   return (
     <Page title="NJC Bible App" subtitle="தமிழ் வேதாகமம் • English Bible" showStatus>
@@ -79,6 +106,58 @@ export function HomePage() {
         </Button>
       </section>
 
+      {daily ? (
+        <section className="mb-4 rounded-3xl border border-navy/10 bg-white/80 p-5 dark:border-white/10 dark:bg-white/5">
+          <p className="text-xs tracking-[0.25em] text-gold uppercase">Verse of the day</p>
+          <p className="mt-2 text-sm font-semibold text-muted">
+            {formatReference(daily.bookId, daily.chapter, daily.number, dailyLanguage)}
+          </p>
+          {dailyTamil ? <p className="tamil mt-3 text-base leading-relaxed">{dailyTamil.text}</p> : null}
+          {dailyEnglish ? (
+            <p className={cn("mt-2 text-sm leading-relaxed text-muted", !dailyTamil && "text-base text-navy dark:text-paper")}>
+              {dailyEnglish.text}
+            </p>
+          ) : null}
+          <div className="mt-4 flex flex-wrap gap-2">
+            <Button
+              variant="gold"
+              onClick={() =>
+                navigate(
+                  `/bible/${daily.bookId}/${daily.chapter}?verse=${daily.number}&translation=${dailyTamil ? "bsi-ov" : "kjv"}`,
+                )
+              }
+            >
+              Read chapter
+            </Button>
+            <Button variant="secondary" onClick={() => void shareDaily()}>
+              Share
+            </Button>
+          </div>
+        </section>
+      ) : null}
+
+      {recentStrip.length > 0 ? (
+        <section className="mb-4">
+          <div className="mb-3 flex items-center justify-between">
+            <h2 className="font-semibold">Recent chapters</h2>
+          </div>
+          <div className="-mx-1 flex gap-2 overflow-x-auto px-1 pb-1">
+            {recentStrip.map((item) => (
+              <button
+                key={`${item.bookId}-${item.chapter}-${item.openedAt}`}
+                type="button"
+                className="min-h-11 shrink-0 rounded-full bg-paper-2 px-4 text-sm font-semibold whitespace-nowrap dark:bg-white/5"
+                onClick={() =>
+                  navigate(`/bible/${item.bookId}/${item.chapter}?translation=${item.translationId || settings.defaultTranslation}`)
+                }
+              >
+                {formatReference(item.bookId, item.chapter, undefined, translationUiLanguage(item.translationId))}
+              </button>
+            ))}
+          </div>
+        </section>
+      ) : null}
+
       <Card className="mb-4" onClick={() => navigate(`/reading-plans/${planInfo.id}`)}>
         <p className="text-xs tracking-[0.25em] text-gold uppercase">Reading Plan</p>
         <h3 className="mt-2 font-semibold">{planInfo.name}</h3>
@@ -115,23 +194,6 @@ export function HomePage() {
           {noteCount ? `${noteCount} note${noteCount === 1 ? "" : "s"} on this phone` : "Verse notes you write while reading."}
         </p>
       </Card>
-
-      <section className="mb-4">
-        <div className="mb-3 flex items-center justify-between">
-          <h2 className="font-semibold">Recently read</h2>
-        </div>
-        <div className="grid gap-2">
-          {recent.length === 0 ? <p className="text-sm text-muted">No recent chapters yet.</p> : null}
-          {recent.map((item) => (
-            <Card
-              key={`${item.bookId}-${item.chapter}-${item.openedAt}`}
-              onClick={() => navigate(`/bible/${item.bookId}/${item.chapter}`)}
-            >
-              {formatReference(item.bookId, item.chapter, undefined, translationUiLanguage(item.translationId))}
-            </Card>
-          ))}
-        </div>
-      </section>
     </Page>
   );
 }

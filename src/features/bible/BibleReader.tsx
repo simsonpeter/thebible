@@ -16,7 +16,7 @@ import { db } from "@/db";
 import { useSettings } from "@/hooks/useSettings";
 import { useToast } from "@/hooks/useToast";
 import { useWakeLock } from "@/hooks/useWakeLock";
-import { useBibleAudio } from "@/hooks/useBibleAudio";
+import { SLEEP_TIMER_OPTIONS, useBibleAudio } from "@/hooks/useBibleAudio";
 import { isTamilScript, toggleParallelTranslation, translationUiLanguage } from "@/config/translations";
 import {
   adjacentChapter,
@@ -32,7 +32,17 @@ import { recordChapterOpen } from "@/services/historyService";
 import { addNote } from "@/services/noteService";
 import { addSermonPassageRange, createSermon, readActiveSermonId, rememberActiveSermon } from "@/services/sermonService";
 import { markChapterRead } from "@/services/progressService";
-import { copyText, formatParallelRangeShare, formatVersesShare, shareOrCopy } from "@/services/shareService";
+import {
+  COPY_FORMAT_OPTIONS,
+  copyText,
+  formatPairShare,
+  formatParallelRangeShare,
+  formatReferenceOnly,
+  formatVersesPlain,
+  formatVersesShare,
+  shareOrCopy,
+  type CopyFormat,
+} from "@/services/shareService";
 import type { VerseRecord } from "@/types/bible";
 import type { HighlightColor } from "@/types/userData";
 import { DEFAULT_BOOKMARK_CATEGORIES } from "@/types/userData";
@@ -76,6 +86,9 @@ export function BibleReader() {
   const [demo, setDemo] = useState(false);
   const [loaded, setLoaded] = useState(false);
   const [layout, setLayout] = useState<"stacked" | "columns">("stacked");
+  const [copyOpen, setCopyOpen] = useState(false);
+  const [sleepMinutes, setSleepMinutes] = useState(0);
+  const [sleepEndsAt, setSleepEndsAt] = useState<number | null>(null);
 
   useWakeLock(settings.wakeLock);
 
@@ -96,6 +109,8 @@ export function BibleReader() {
   useEffect(() => {
     let cancelled = false;
     async function load() {
+      setVerses([]);
+      setPairs([]);
       const translation = await getTranslation(translationId);
       if (!translation) {
         if (!cancelled) {
@@ -204,6 +219,16 @@ export function BibleReader() {
 
   const audioChapterKey = `${mode === "parallel" ? parallelIds.join("+") || translationId : translationId}:${bookId}:${chapter}`;
 
+  function buildPath(nextBook: string, nextChapter: number, extra?: Record<string, string>) {
+    const paramsObj = new URLSearchParams(searchParams);
+    paramsObj.set("translation", translationId);
+    paramsObj.set("mode", mode);
+    if (extra) {
+      for (const [key, value] of Object.entries(extra)) paramsObj.set(key, value);
+    }
+    return `/bible/${nextBook}/${nextChapter}?${paramsObj.toString()}`;
+  }
+
   const {
     status: audioStatus,
     currentVerse: speakingVerse,
@@ -215,12 +240,49 @@ export function BibleReader() {
     chapterKey: audioChapterKey,
     verses: audioVerses,
     rate: settings.ttsRate,
+    onChapterEnd: settings.ttsAutoNextChapter
+      ? () => {
+          const next = adjacentChapter(bookId, chapter, 1);
+          if (!next) {
+            push("Reached the end of the Bible", "info");
+            return false;
+          }
+          navigate(buildPath(next.bookId, next.chapter));
+          return true;
+        }
+      : undefined,
   });
 
   useEffect(() => {
     if (speakingVerse == null) return;
     document.getElementById(`v-${speakingVerse}`)?.scrollIntoView({ behavior: "smooth", block: "center" });
   }, [speakingVerse]);
+
+  useEffect(() => {
+    if (sleepEndsAt == null) return;
+    if (audioStatus !== "playing" && audioStatus !== "paused") return;
+    const tick = window.setInterval(() => {
+      if (Date.now() < sleepEndsAt) return;
+      stopAudio();
+      setSleepEndsAt(null);
+      setSleepMinutes(0);
+      push("Sleep timer ended", "info");
+    }, 1000);
+    return () => window.clearInterval(tick);
+  }, [sleepEndsAt, audioStatus, stopAudio, push]);
+
+  function cycleSleepTimer() {
+    const index = SLEEP_TIMER_OPTIONS.findIndex((option) => option.minutes === sleepMinutes);
+    const next = SLEEP_TIMER_OPTIONS[(index + 1) % SLEEP_TIMER_OPTIONS.length]!;
+    setSleepMinutes(next.minutes);
+    if (next.minutes <= 0) {
+      setSleepEndsAt(null);
+      push("Sleep timer off", "info");
+      return;
+    }
+    setSleepEndsAt(Date.now() + next.minutes * 60_000);
+    push(`Sleep timer ${next.label}`, "info");
+  }
 
   const selectedVerse = useMemo(() => {
     if (!range) return undefined;
@@ -249,16 +311,6 @@ export function BibleReader() {
     const next = adjacentChapter(bookId, chapter, delta);
     if (!next) return;
     navigate(buildPath(next.bookId, next.chapter));
-  }
-
-  function buildPath(nextBook: string, nextChapter: number, extra?: Record<string, string>) {
-    const paramsObj = new URLSearchParams(searchParams);
-    paramsObj.set("translation", translationId);
-    paramsObj.set("mode", mode);
-    if (extra) {
-      for (const [key, value] of Object.entries(extra)) paramsObj.set(key, value);
-    }
-    return `/bible/${nextBook}/${nextChapter}?${paramsObj.toString()}`;
   }
 
   function changeBook(nextBook: string) {
@@ -352,6 +404,99 @@ export function BibleReader() {
     });
   }
 
+  async function copyWithFormat(format: CopyFormat) {
+    if (!range) return;
+    let text = "";
+    if (format === "reference") {
+      text = formatReferenceOnly({
+        bookId,
+        chapter,
+        verseStart: range.start,
+        verseEnd: range.end,
+        language,
+      });
+    } else if (format === "plain") {
+      if (mode === "parallel") {
+        const preferred =
+          parallelIds.find((id) => isTamilScript(id)) ?? parallelIds[0] ?? translationId;
+        text = formatVersesPlain({
+          bookId,
+          chapter,
+          language: translationUiLanguage(preferred),
+          verses: selectedPairs
+            .map((pair) => {
+              const verse = pair.byId[preferred];
+              if (!verse || verse.isPlaceholder) return null;
+              return { number: pair.number, text: verse.text };
+            })
+            .filter((item): item is { number: number; text: string } => Boolean(item)),
+        });
+      } else {
+        text = formatVersesPlain({
+          bookId,
+          chapter,
+          language,
+          verses: selectedSingleVerses.map((verse) => ({ number: verse.number, text: verse.text })),
+        });
+      }
+    } else if (format === "pair") {
+      text = await buildPairCopyText();
+    } else {
+      text = selectedShareText();
+    }
+    if (!text.trim()) {
+      push("Nothing to copy", "info");
+      return;
+    }
+    await copyText(text);
+    setCopyOpen(false);
+    setMenuOpen(false);
+    push(format === "reference" ? "Reference copied" : "Copied", "success");
+  }
+
+  async function buildPairCopyText(): Promise<string> {
+    if (!range) return "";
+    if (mode === "parallel") {
+      return formatPairShare({
+        bookId,
+        chapter,
+        verses: selectedPairs.map((pair) => {
+          const tamilId = parallelIds.find((id) => isTamilScript(id));
+          const englishId = parallelIds.find((id) => !isTamilScript(id) && id !== "tanglish") ?? "kjv";
+          const tamil = tamilId ? pair.byId[tamilId] : undefined;
+          const english = pair.byId[englishId] ?? pair.byId.kjv;
+          return {
+            number: pair.number,
+            tamil: tamil && !tamil.isPlaceholder ? tamil.text : undefined,
+            english: english && !english.isPlaceholder ? english.text : undefined,
+          };
+        }),
+      });
+    }
+    const tamilId = isTamilScript(translationId) ? translationId : "bsi-ov";
+    const englishId = translationId === "kjv" || translationId === "sv" ? translationId : "kjv";
+    const [tamilChapter, englishChapter] = await Promise.all([
+      getChapterVerses(tamilId, bookId, chapter),
+      getChapterVerses(englishId, bookId, chapter),
+    ]);
+    const tamilMap = new Map(tamilChapter.map((verse) => [verse.number, verse]));
+    const englishMap = new Map(englishChapter.map((verse) => [verse.number, verse]));
+    return formatPairShare({
+      bookId,
+      chapter,
+      verses: Array.from({ length: range.end - range.start + 1 }, (_, index) => {
+        const number = range.start + index;
+        const tamil = tamilMap.get(number);
+        const english = englishMap.get(number);
+        return {
+          number,
+          tamil: tamil && !tamil.isPlaceholder ? tamil.text : undefined,
+          english: english && !english.isPlaceholder ? english.text : undefined,
+        };
+      }),
+    });
+  }
+
   async function onHighlight(color: HighlightColor) {
     if (!range) return;
     const next = new Map(highlights);
@@ -390,8 +535,9 @@ export function BibleReader() {
       return;
     }
     if (action === "copy") {
-      await copyText(shareText);
-      push(selectedCount > 1 ? "Verses copied" : "Copied", "success");
+      setCopyOpen(true);
+      setMenuOpen(false);
+      return;
     }
     if (action === "share") {
       const result = await shareOrCopy("NJC Bible App", shareText);
@@ -515,6 +661,14 @@ export function BibleReader() {
                     Stop
                   </button>
                 ) : null}
+                <button
+                  type="button"
+                  className="min-h-9 px-3 text-xs font-semibold"
+                  aria-label="Sleep timer"
+                  onClick={cycleSleepTimer}
+                >
+                  {sleepMinutes > 0 ? `${sleepMinutes}m` : "Sleep"}
+                </button>
               </div>
             ) : null}
             <div className="inline-flex rounded-full bg-navy/8 p-0.5 dark:bg-white/10" role="group" aria-label="Font size">
@@ -646,7 +800,7 @@ export function BibleReader() {
               >
                 Listen
               </Button>
-              <Button variant="secondary" onClick={() => void handleAction("copy")}>
+              <Button variant="secondary" onClick={() => setCopyOpen(true)}>
                 Copy
               </Button>
               <Button variant="secondary" onClick={() => void handleAction("share")}>
@@ -698,11 +852,28 @@ export function BibleReader() {
           Save note
         </Button>
       </Modal>
-      <Modal open={bookmarkOpen} title="Bookmark" onClose={() => setBookmarkOpen(false)}>
+      <Modal open={copyOpen} title="Copy format" onClose={() => setCopyOpen(false)}>
+        <div className="grid gap-2">
+          {COPY_FORMAT_OPTIONS.map((option) => (
+            <button
+              key={option.id}
+              type="button"
+              className="min-h-12 rounded-2xl bg-paper-2 px-3 py-2 text-left dark:bg-white/5"
+              onClick={() => void copyWithFormat(option.id)}
+            >
+              <p className="text-sm font-semibold">{option.label}</p>
+              <p className="text-xs text-muted">{option.hint}</p>
+            </button>
+          ))}
+        </div>
+      </Modal>
+      <Modal open={bookmarkOpen} title="Bookmark folder" onClose={() => setBookmarkOpen(false)}>
+        <p className="mb-2 text-xs font-semibold tracking-wide text-muted uppercase">Folder</p>
         <input
           className="min-h-12 w-full rounded-2xl border border-navy/10 px-3 dark:border-white/10 dark:bg-white/5"
           value={bookmarkTitle}
           onChange={(event) => setBookmarkTitle(event.target.value)}
+          aria-label="Bookmark title"
         />
         <div className="mt-3 grid grid-cols-2 gap-2">
           {DEFAULT_BOOKMARK_CATEGORIES.map((category) => (

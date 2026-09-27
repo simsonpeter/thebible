@@ -206,6 +206,12 @@ export function SettingsPage() {
             </Chip>
           ))}
         </Row>
+        <Row label="Auto-next chapter">
+          <Toggle
+            value={settings.ttsAutoNextChapter}
+            onChange={(value) => void update({ ttsAutoNextChapter: value })}
+          />
+        </Row>
         <div className="p-4">
           <Button variant="secondary" onClick={() => void clearHistory().then(() => push("History cleared", "success"))}>
             Clear reading history

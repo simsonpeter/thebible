@@ -27,6 +27,8 @@ export interface AppSettings {
   wakeLock: boolean;
   /** Web Speech playback rate (roughly 0.6–1.5). */
   ttsRate: number;
+  /** After the last verse, continue listening into the next chapter. */
+  ttsAutoNextChapter: boolean;
   lastBookId: string;
   lastChapter: number;
   lastVerse: number;
@@ -66,6 +68,7 @@ export const DEFAULT_SETTINGS: AppSettings = {
   rememberPosition: true,
   wakeLock: false,
   ttsRate: 1,
+  ttsAutoNextChapter: true,
   lastBookId: "john",
   lastChapter: 3,
   lastVerse: 1,
