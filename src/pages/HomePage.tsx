@@ -70,8 +70,10 @@ export function HomePage() {
       const remembered = settings.rememberedFinishedBooks;
       const fresh = finished.filter((id) => !remembered.includes(id));
       if (!fresh.length) return;
-      push(`Finished ${fresh[0]!.replace(/-/g, " ")} — well done!`, "success");
-      void update({ rememberedFinishedBooks: [...remembered, ...fresh] });
+      // Persist first so a remount cannot toast-spam the same books
+      void update({ rememberedFinishedBooks: [...remembered, ...fresh] }).then(() => {
+        push(`Finished ${fresh[0]!.replace(/-/g, " ")} — well done!`, "success");
+      });
     });
     // eslint-disable-next-line react-hooks/exhaustive-deps -- celebrate newly finished books once per load
   }, [settings.dailyVerseSalt, settings.showKidsPromise]);

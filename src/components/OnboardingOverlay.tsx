@@ -2,8 +2,8 @@ import { Button } from "@/components/ui/Button";
 import { useSettings } from "@/hooks/useSettings";
 
 export function OnboardingOverlay() {
-  const { settings, update } = useSettings();
-  if (settings.onboardingDone) return null;
+  const { settings, update, ready } = useSettings();
+  if (!ready || settings.onboardingDone) return null;
 
   return (
     <div className="fixed inset-0 z-[80] flex items-end justify-center bg-navy/70 p-4 backdrop-blur-sm sm:items-center">

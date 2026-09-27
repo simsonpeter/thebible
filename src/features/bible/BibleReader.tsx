@@ -116,6 +116,8 @@ export function BibleReader() {
     }
   }, [book, chapter, navigate]);
 
+  const parallelKey = settings.parallelTranslations.join(",");
+
   useEffect(() => {
     let cancelled = false;
     async function load() {
@@ -153,23 +155,34 @@ export function BibleReader() {
       window.setTimeout(() => {
         void markChapterRead(bookId, chapter);
       }, 3000);
-      if (settings.rememberPosition) {
-        await update({ lastBookId: bookId, lastChapter: chapter, lastVerse: verseParam || 1 });
-      }
     }
     void load();
     return () => {
       cancelled = true;
     };
+    // parallelKey is a stable string; avoid array identity from settings saves retriggering load
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- settings.parallelTranslations via parallelKey
+  }, [bookId, chapter, translationId, mode, settings.parallelOrder, parallelKey]);
+
+  useEffect(() => {
+    if (!settings.rememberPosition) return;
+    const lastVerse = verseParam || 1;
+    if (
+      settings.lastBookId === bookId &&
+      settings.lastChapter === chapter &&
+      settings.lastVerse === lastVerse
+    ) {
+      return;
+    }
+    void update({ lastBookId: bookId, lastChapter: chapter, lastVerse });
   }, [
     bookId,
     chapter,
-    translationId,
-    mode,
     verseParam,
-    settings.parallelOrder,
-    settings.parallelTranslations,
     settings.rememberPosition,
+    settings.lastBookId,
+    settings.lastChapter,
+    settings.lastVerse,
     update,
   ]);
 

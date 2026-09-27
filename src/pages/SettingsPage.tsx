@@ -63,20 +63,15 @@ export function SettingsPage() {
             <Chip
               key={preset}
               active={settings.fontPreset === preset}
-              onClick={() => void update({ fontPreset: preset, ...FONT_PRESETS[preset], tamilFont: preset === "elder" ? "serif" : settings.tamilFont })}
+              onClick={() =>
+                void update({
+                  fontPreset: preset,
+                  ...FONT_PRESETS[preset],
+                  tamilFont: preset === "elder" ? "serif" : settings.tamilFont,
+                })
+              }
             >
-              {preset === "elder" ? "Elder" : preset}
-            </Chip>
-          ))}
-        </Row>
-        <Row label="Size">
-          {(["small", "medium", "large", "xl"] as FontPreset[]).map((preset) => (
-            <Chip
-              key={preset}
-              active={settings.fontPreset === preset}
-              onClick={() => void update({ fontPreset: preset, ...FONT_PRESETS[preset] })}
-            >
-              {preset === "xl" ? "Extra Large" : preset}
+              {preset === "elder" ? "Elder" : preset === "xl" ? "Extra Large" : preset}
             </Chip>
           ))}
         </Row>

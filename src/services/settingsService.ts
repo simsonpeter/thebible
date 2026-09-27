@@ -7,7 +7,12 @@ const THEME_STORAGE_KEY = "njc-theme";
 export async function loadSettings(): Promise<AppSettings> {
   const row = await db.settings.get(SETTINGS_KEY);
   const value = (row?.value ?? {}) as Partial<AppSettings>;
-  return { ...DEFAULT_SETTINGS, ...value };
+  const merged = { ...DEFAULT_SETTINGS, ...value };
+  // Existing installs from before onboarding: don't force the welcome sheet
+  if (row?.value && !Object.prototype.hasOwnProperty.call(row.value, "onboardingDone")) {
+    merged.onboardingDone = true;
+  }
+  return merged;
 }
 
 export async function saveSettings(patch: Partial<AppSettings>): Promise<AppSettings> {
