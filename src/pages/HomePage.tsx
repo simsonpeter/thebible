@@ -13,6 +13,7 @@ import { listPlans, planProgress } from "@/services/planService";
 import { getDailyVersePair } from "@/services/dailyVerse";
 import { formatReference } from "@/utils/reference";
 import { formatVerseShare, shareOrCopy } from "@/services/shareService";
+import { shareVerseImage } from "@/services/verseImage";
 import { cn } from "@/utils/misc";
 import { isTamilScript, translationUiLanguage } from "@/config/translations";
 import type { ReadingHistoryRecord } from "@/types/userData";
@@ -28,6 +29,7 @@ export function HomePage() {
   const [planInfo, setPlanInfo] = useState({ name: "Reading Plan", day: 1, total: 365, id: "njc-plan" });
   const [dailyTamil, setDailyTamil] = useState<VerseRecord | undefined>();
   const [dailyEnglish, setDailyEnglish] = useState<VerseRecord | undefined>();
+  const [sharing, setSharing] = useState(false);
   const bookmarkCount = useLiveQuery(() => db.bookmarks.count(), []) ?? 0;
   const noteCount = useLiveQuery(() => db.notes.count(), []) ?? 0;
   const sermonCount = useLiveQuery(() => db.sermons.count(), []) ?? 0;
@@ -59,15 +61,51 @@ export function HomePage() {
 
   async function shareDaily() {
     if (!daily) return;
-    const text = formatVerseShare({
-      bookId: daily.bookId,
-      chapter: daily.chapter,
-      verse: daily.number,
-      text: daily.text,
-      language: dailyLanguage,
+    const text = dailyTamil?.text ?? dailyEnglish?.text ?? daily.text;
+    const language = dailyTamil ? ("ta" as const) : ("en" as const);
+    setSharing(true);
+    try {
+      const result = await shareVerseImage({
+        template: "promise",
+        bookId: daily.bookId,
+        chapter: daily.chapter,
+        verse: daily.number,
+        text,
+        language,
+        fontSize: language === "ta" ? 40 : 46,
+        align: "center",
+        eyebrow: "Promise of the day",
+      });
+      if (result === "downloaded") push("Image saved — open it to share", "success");
+      else if (result === "shared") push("Promise shared", "success");
+    } catch {
+      const fallback = formatVerseShare({
+        bookId: daily.bookId,
+        chapter: daily.chapter,
+        verse: daily.number,
+        text,
+        language,
+      });
+      const result = await shareOrCopy("NJC Bible App — Promise of the day", fallback);
+      if (result === "copied") push("Verse copied", "success");
+    } finally {
+      setSharing(false);
+    }
+  }
+
+  function openPromiseImage() {
+    if (!daily) return;
+    navigate("/verse-image", {
+      state: {
+        bookId: daily.bookId,
+        chapter: daily.chapter,
+        verse: daily.number,
+        text: dailyTamil?.text ?? dailyEnglish?.text ?? daily.text,
+        language: dailyLanguage,
+        template: "promise",
+        eyebrow: "Promise of the day",
+      },
     });
-    const result = await shareOrCopy("NJC Bible App — Promise of the day", text);
-    if (result === "copied") push("Verse copied", "success");
   }
 
   return (
@@ -129,8 +167,11 @@ export function HomePage() {
             >
               Read chapter
             </Button>
-            <Button variant="secondary" onClick={() => void shareDaily()}>
-              Share
+            <Button variant="secondary" disabled={sharing} onClick={() => void shareDaily()}>
+              {sharing ? "Preparing…" : "Share image"}
+            </Button>
+            <Button variant="ghost" onClick={openPromiseImage}>
+              Edit image
             </Button>
           </div>
         </section>

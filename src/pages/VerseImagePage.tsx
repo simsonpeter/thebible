@@ -5,20 +5,24 @@ import { Button } from "@/components/ui/Button";
 import {
   canvasToBlob,
   renderVerseImage,
+  shareVerseImage,
   type VerseImageTemplate,
 } from "@/services/verseImage";
-import { getDailyVerse } from "@/services/dailyVerse";
+import { getDailyVersePair } from "@/services/dailyVerse";
 import { useToast } from "@/hooks/useToast";
 import { shareOrCopy } from "@/services/shareService";
 
 const templates: VerseImageTemplate[] = [
-  "minimal",
-  "dark",
-  "nature",
-  "sky",
-  "mountains",
+  "promise",
   "sunrise",
+  "sky",
+  "nature",
+  "mountains",
   "church",
+  "dark",
+  "minimal",
+  "gradient",
+  "elegant",
 ];
 
 interface VerseState {
@@ -27,6 +31,8 @@ interface VerseState {
   verse: number;
   text: string;
   language: "en" | "ta";
+  template?: VerseImageTemplate;
+  eyebrow?: string;
 }
 
 export function VerseImagePage() {
@@ -34,40 +40,52 @@ export function VerseImagePage() {
   const incoming = location.state as VerseState | null;
   const { push } = useToast();
   const [verse, setVerse] = useState<VerseState | null>(incoming);
-  const [template, setTemplate] = useState<VerseImageTemplate>("minimal");
-  const [fontSize, setFontSize] = useState(48);
-  const [align, setAlign] = useState<CanvasTextAlign>("left");
+  const [template, setTemplate] = useState<VerseImageTemplate>(incoming?.template ?? "promise");
+  const [fontSize, setFontSize] = useState(incoming?.language === "ta" ? 40 : 46);
+  const [align, setAlign] = useState<CanvasTextAlign>("center");
   const [preview, setPreview] = useState<string>("");
+  const eyebrow = verse?.eyebrow ?? (template === "promise" ? "Promise of the day" : undefined);
 
   useEffect(() => {
     if (verse) return;
-    void getDailyVerse().then((daily) => {
+    void getDailyVersePair().then((pair) => {
+      const daily = pair.tamil ?? pair.english;
       if (!daily) return;
       setVerse({
         bookId: daily.bookId,
         chapter: daily.chapter,
         verse: daily.number,
         text: daily.text,
-        language: "en",
+        language: pair.tamil ? "ta" : "en",
+        template: "promise",
+        eyebrow: "Promise of the day",
       });
+      setTemplate("promise");
+      setFontSize(pair.tamil ? 40 : 46);
     });
   }, [verse]);
 
   useEffect(() => {
     if (!verse) return;
     let url = "";
-    void renderVerseImage({ ...verse, template, fontSize, align }).then((canvas) => {
+    void renderVerseImage({
+      ...verse,
+      template,
+      fontSize,
+      align,
+      eyebrow,
+    }).then((canvas) => {
       url = canvas.toDataURL("image/png");
       setPreview(url);
     });
     return () => {
       if (url.startsWith("blob:")) URL.revokeObjectURL(url);
     };
-  }, [verse, template, fontSize, align]);
+  }, [verse, template, fontSize, align, eyebrow]);
 
   async function download() {
     if (!verse) return;
-    const canvas = await renderVerseImage({ ...verse, template, fontSize, align });
+    const canvas = await renderVerseImage({ ...verse, template, fontSize, align, eyebrow });
     const blob = await canvasToBlob(canvas);
     const url = URL.createObjectURL(blob);
     const anchor = document.createElement("a");
@@ -80,19 +98,18 @@ export function VerseImagePage() {
 
   async function share() {
     if (!verse) return;
-    const canvas = await renderVerseImage({ ...verse, template, fontSize, align });
-    const blob = await canvasToBlob(canvas);
-    const file = new File([blob], "njc-verse.png", { type: "image/png" });
-    if (navigator.share && navigator.canShare?.({ files: [file] })) {
-      await navigator.share({ files: [file], title: "NJC Bible App" });
-      return;
+    try {
+      const result = await shareVerseImage({ ...verse, template, fontSize, align, eyebrow });
+      if (result === "downloaded") push("Image saved — open it to share", "success");
+      else push("Shared", "success");
+    } catch {
+      await shareOrCopy("NJC Bible App", verse.text);
+      push("Sharing is not available; verse copied instead.", "info");
     }
-    await shareOrCopy("NJC Bible App", verse.text);
-    push("Sharing is not available; verse copied instead.", "info");
   }
 
   return (
-    <Page title="Verse image" subtitle="Created on this device" back>
+    <Page title="Verse image" subtitle="Promise cards created on this device" back>
       <div className="mb-4 flex flex-wrap gap-2">
         {templates.map((item) => (
           <button
