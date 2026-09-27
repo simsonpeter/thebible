@@ -20,7 +20,8 @@ import { useToast } from "@/hooks/useToast";
 import { useWakeLock } from "@/hooks/useWakeLock";
 import { SLEEP_TIMER_OPTIONS, useBibleAudio } from "@/hooks/useBibleAudio";
 import { isTamilScript, toggleParallelTranslation, translationUiLanguage } from "@/config/translations";
-import { crossRefPath, formatCrossRef, getCrossReferences } from "@/services/crossReferenceService";
+import { crossRefPath, formatCrossRef, getCrossReferences, getNextCrossReference } from "@/services/crossReferenceService";
+import { getBookIntro } from "@/data/bookIntros";
 import {
   adjacentChapter,
   getChapterVerses,
@@ -54,7 +55,7 @@ import { formatRange } from "@/utils/reference";
 import { verseId } from "@/utils/text";
 import { cn, formatSundayLabel } from "@/utils/misc";
 
-const FONT_ORDER: FontPreset[] = ["small", "medium", "large", "xl"];
+const FONT_ORDER: FontPreset[] = ["small", "medium", "large", "xl", "elder"];
 
 export function BibleReader() {
   const params = useParams();
@@ -94,6 +95,10 @@ export function BibleReader() {
   const [sleepEndsAt, setSleepEndsAt] = useState<number | null>(null);
   const [wordStudy, setWordStudy] = useState<string | null>(null);
   const [crossRefsOpen, setCrossRefsOpen] = useState(false);
+  const [compareOpen, setCompareOpen] = useState(false);
+  const [introOpen, setIntroOpen] = useState(false);
+  const [compareRows, setCompareRows] = useState<ParallelVerse[]>([]);
+  const bookIntro = getBookIntro(bookId);
 
   useWakeLock(settings.wakeLock);
 
@@ -551,7 +556,17 @@ export function BibleReader() {
     if (action === "bookmark") setBookmarkOpen(true);
     if (action === "note") setNoteOpen(true);
     if (action === "sermon") setSermonOpen(true);
-    if (action === "compare") changeMode("parallel");
+    if (action === "compare") {
+      void (async () => {
+        if (!range) return;
+        const ids = ["bsi-ov", "tanglish", "kjv"];
+        const rows = await getParallelVerses(bookId, chapter, ids);
+        setCompareRows(rows.filter((row) => row.number >= range.start && row.number <= range.end));
+        setCompareOpen(true);
+      })();
+      setMenuOpen(false);
+      return;
+    }
     if (action === "crossrefs") {
       setCrossRefsOpen(true);
       setMenuOpen(false);
@@ -651,6 +666,11 @@ export function BibleReader() {
             <button type="button" className="min-h-10 min-w-10 text-xl" aria-label="Search" onClick={() => navigate("/search")}>
               ⌕
             </button>
+            {bookIntro ? (
+              <button type="button" className="min-h-10 px-2 text-xs font-semibold" aria-label="Book intro" onClick={() => setIntroOpen(true)}>
+                Intro
+              </button>
+            ) : null}
             <button type="button" className="min-h-10 min-w-10 text-xl" aria-label="Go to verse" onClick={() => setGoOpen(true)}>
               ⋮
             </button>
@@ -908,9 +928,55 @@ export function BibleReader() {
                 <span className={language === "ta" ? "tamil" : undefined}>{formatCrossRef(target, language)}</span>
               </button>
             ))}
+            {range ? (
+              <Button
+                className="mt-2"
+                variant="gold"
+                onClick={() => {
+                  const next = getNextCrossReference(bookId, chapter, range.start, [
+                    `${bookId}:${chapter}:${range.start}`,
+                  ]);
+                  if (!next) {
+                    push("End of this cross-ref chain", "info");
+                    return;
+                  }
+                  setCrossRefsOpen(false);
+                  navigate(crossRefPath(next, translationId));
+                }}
+              >
+                Next related verse
+              </Button>
+            ) : null}
           </div>
         )}
       </BottomSheet>
+      <Modal open={introOpen} title={bookIntro?.titleEn ?? "Intro"} onClose={() => setIntroOpen(false)}>
+        {bookIntro ? (
+          <div className="grid gap-3 text-sm leading-relaxed">
+            <p className="tamil font-semibold">{bookIntro.titleTa}</p>
+            <p>{bookIntro.bodyEn}</p>
+            <p className="tamil text-muted">{bookIntro.bodyTa}</p>
+          </div>
+        ) : null}
+      </Modal>
+      <Modal open={compareOpen} title="Compare · Tamil + Tanglish + KJV" onClose={() => setCompareOpen(false)}>
+        <div className="grid max-h-[70vh] gap-4 overflow-y-auto">
+          {compareRows.map((row) => (
+            <div key={row.number} className="rounded-2xl bg-paper-2 p-3 dark:bg-white/5">
+              <p className="text-xs font-semibold text-gold">{row.number}</p>
+              {(["bsi-ov", "tanglish", "kjv"] as const).map((id) => {
+                const verse = row.byId[id];
+                return (
+                  <div key={id} className="mt-2">
+                    <p className="text-[11px] font-semibold uppercase tracking-wide text-muted">{id}</p>
+                    <p className={cn("text-sm leading-relaxed", id === "bsi-ov" && "tamil")}>{verse?.text ?? "—"}</p>
+                  </div>
+                );
+              })}
+            </div>
+          ))}
+        </div>
+      </Modal>
       <BibleNavigator open={goOpen} onClose={() => setGoOpen(false)} />
       <Modal open={noteOpen} title="Add note" onClose={() => setNoteOpen(false)}>
         <textarea

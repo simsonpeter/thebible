@@ -61,6 +61,7 @@ export function VerseImagePage() {
   const [verticalAlign, setVerticalAlign] = useState<VerseImageVerticalAlign>("middle");
   const [offsetX, setOffsetX] = useState(0);
   const [offsetY, setOffsetY] = useState(0);
+  const [aspect, setAspect] = useState<"story" | "square" | "portrait">("portrait");
   const [preview, setPreview] = useState<string>("");
   const eyebrow = verse?.eyebrow ?? (template === "promise" ? "Promise of the day" : undefined);
 
@@ -94,6 +95,7 @@ export function VerseImagePage() {
       verticalAlign,
       offsetX,
       offsetY,
+      aspect,
       eyebrow,
     }).then((canvas) => {
       url = canvas.toDataURL("image/png");
@@ -102,10 +104,10 @@ export function VerseImagePage() {
     return () => {
       if (url.startsWith("blob:")) URL.revokeObjectURL(url);
     };
-  }, [verse, template, fontSize, align, verticalAlign, offsetX, offsetY, eyebrow]);
+  }, [verse, template, fontSize, align, verticalAlign, offsetX, offsetY, aspect, eyebrow]);
 
   const imageOptions = verse
-    ? { ...verse, template, fontSize, align, verticalAlign, offsetX, offsetY, eyebrow }
+    ? { ...verse, template, fontSize, align, verticalAlign, offsetX, offsetY, aspect, eyebrow }
     : null;
 
   async function download() {
@@ -159,6 +161,26 @@ export function VerseImagePage() {
           className="mt-2 w-full"
         />
       </label>
+
+      <p className="mb-2 text-sm font-semibold">Card size</p>
+      <div className="mb-4 flex flex-wrap gap-2">
+        {(
+          [
+            ["portrait", "Portrait"],
+            ["story", "WhatsApp / Status"],
+            ["square", "Instagram square"],
+          ] as const
+        ).map(([id, label]) => (
+          <button
+            key={id}
+            type="button"
+            className={`min-h-11 rounded-full px-3 text-sm ${aspect === id ? "bg-navy text-white" : "bg-paper-2 dark:bg-white/5"}`}
+            onClick={() => setAspect(id)}
+          >
+            {label}
+          </button>
+        ))}
+      </div>
 
       <p className="mb-2 text-sm font-semibold">Position</p>
       <div className="mb-4 grid grid-cols-3 gap-2" role="group" aria-label="Text position">

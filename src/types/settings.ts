@@ -3,11 +3,20 @@ import type { TranslationId } from "./bible";
 export type ThemeMode = "light" | "dark" | "system";
 export type ReadingMode = "single" | "parallel";
 export type ParallelOrder = "tamil-first" | "english-first";
-export type FontPreset = "small" | "medium" | "large" | "xl";
+export type FontPreset = "small" | "medium" | "large" | "xl" | "elder";
 export type FontFamilyChoice = "sans" | "serif";
+
+export interface SundayPin {
+  bookId: string;
+  chapter: number;
+  verse?: number;
+  label?: string;
+}
 
 export interface AppSettings {
   theme: ThemeMode;
+  /** Gold-on-navy evening reading look. */
+  liturgyMode: boolean;
   defaultTranslation: TranslationId;
   readingMode: ReadingMode;
   parallelOrder: ParallelOrder;
@@ -25,10 +34,10 @@ export interface AppSettings {
   distractionFree: boolean;
   rememberPosition: boolean;
   wakeLock: boolean;
-  /** Web Speech playback rate (roughly 0.6–1.5). */
   ttsRate: number;
-  /** After the last verse, continue listening into the next chapter. */
   ttsAutoNextChapter: boolean;
+  /** Prefer shorter sleep when liturgy mode starts Listen. */
+  liturgySleepMinutes: number;
   lastBookId: string;
   lastChapter: number;
   lastVerse: number;
@@ -36,8 +45,11 @@ export interface AppSettings {
   dailyVerseSalt: number;
   uiLanguage: "en" | "ta";
   highContrast: boolean;
-  /** Last opened commentary route, e.g. `/commentary/full/john/3`. */
   lastCommentaryPath: string;
+  sundayPin: SundayPin | null;
+  onboardingDone: boolean;
+  showKidsPromise: boolean;
+  rememberedFinishedBooks: string[];
 }
 
 export const FONT_PRESETS: Record<
@@ -48,10 +60,12 @@ export const FONT_PRESETS: Record<
   medium: { tamilFontSize: 19, englishFontSize: 18, lineHeight: 1.7, verseSpacing: 14 },
   large: { tamilFontSize: 22, englishFontSize: 20, lineHeight: 1.8, verseSpacing: 18 },
   xl: { tamilFontSize: 26, englishFontSize: 24, lineHeight: 1.9, verseSpacing: 22 },
+  elder: { tamilFontSize: 30, englishFontSize: 28, lineHeight: 2, verseSpacing: 24 },
 };
 
 export const DEFAULT_SETTINGS: AppSettings = {
   theme: "system",
+  liturgyMode: false,
   defaultTranslation: "kjv",
   readingMode: "single",
   parallelOrder: "tamil-first",
@@ -71,6 +85,7 @@ export const DEFAULT_SETTINGS: AppSettings = {
   wakeLock: false,
   ttsRate: 1,
   ttsAutoNextChapter: true,
+  liturgySleepMinutes: 30,
   lastBookId: "john",
   lastChapter: 3,
   lastVerse: 1,
@@ -79,4 +94,8 @@ export const DEFAULT_SETTINGS: AppSettings = {
   uiLanguage: "en",
   highContrast: false,
   lastCommentaryPath: "",
+  sundayPin: { bookId: "john", chapter: 3, verse: 16, label: "This Sunday" },
+  onboardingDone: false,
+  showKidsPromise: true,
+  rememberedFinishedBooks: [],
 };

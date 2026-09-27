@@ -9,7 +9,7 @@ const actions = [
   { id: "bookmark", label: "Bookmark" },
   { id: "note", label: "Add Note" },
   { id: "sermon", label: "Add to sermon" },
-  { id: "compare", label: "Compare" },
+  { id: "compare", label: "Compare 3-way" },
   { id: "crossrefs", label: "Cross-refs" },
   { id: "search", label: "Search" },
   { id: "strongs", label: "Strong Dictionary" },

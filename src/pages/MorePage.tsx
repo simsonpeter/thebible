@@ -14,6 +14,8 @@ export function MorePage() {
     { to: "/account", label: "Account sync" },
     { to: "/sermons", label: "Sunday sermons" },
     { to: "/reading-plans", label: "Reading plans" },
+    { to: "/topics", label: "Topics", subtitle: "Faith · Prayer · Peace" },
+    { to: "/memory", label: "Memory verses", subtitle: "Practice from Memory folder" },
     { to: "/dictionary", label: "Strong Dictionary", subtitle: "Hebrew/Greek" },
     { to: "/commentary", label: "Commentary", subtitle: "Brief + full Tamil விரிவுரை" },
     { to: "/progress", label: "Bible progress" },

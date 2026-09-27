@@ -15,6 +15,8 @@ import { toggleParallelTranslation } from "@/config/translations";
 import type { TranslationId } from "@/types/bible";
 import { useAuth } from "@/hooks/useAuth";
 import { TTS_RATE_OPTIONS } from "@/services/ttsService";
+import { getDataHealth, type DataHealthReport } from "@/services/dataHealthService";
+import { BOOK_CATALOG } from "@/data/books";
 
 export function SettingsPage() {
   const { settings, update } = useSettings();
@@ -22,9 +24,11 @@ export function SettingsPage() {
   const navigate = useNavigate();
   const { user } = useAuth();
   const [storage, setStorage] = useState({ translations: 0, verses: 0, bookmarks: 0, notes: 0, sermons: 0 });
+  const [health, setHealth] = useState<DataHealthReport | null>(null);
 
   useEffect(() => {
     void storageSummary().then(setStorage);
+    void getDataHealth().then(setHealth);
   }, []);
 
   return (
@@ -51,32 +55,19 @@ export function SettingsPage() {
             </Chip>
           ))}
         </Row>
+        <Row label="Night liturgy">
+          <Toggle value={settings.liturgyMode} onChange={(value) => void update({ liturgyMode: value, theme: value ? "dark" : settings.theme })} />
+        </Row>
         <Row label="Font size">
-          <Chip
-            active={false}
-            onClick={() => {
-              const order: FontPreset[] = ["small", "medium", "large", "xl"];
-              const index = Math.max(0, order.indexOf(settings.fontPreset) - 1);
-              const preset = order[index];
-              void update({ fontPreset: preset, ...FONT_PRESETS[preset] });
-            }}
-          >
-            A-
-          </Chip>
-          <Chip active={true} onClick={() => void update({ fontPreset: "medium", ...FONT_PRESETS.medium })}>
-            A
-          </Chip>
-          <Chip
-            active={false}
-            onClick={() => {
-              const order: FontPreset[] = ["small", "medium", "large", "xl"];
-              const index = Math.min(order.length - 1, order.indexOf(settings.fontPreset) + 1);
-              const preset = order[index];
-              void update({ fontPreset: preset, ...FONT_PRESETS[preset] });
-            }}
-          >
-            A+
-          </Chip>
+          {(["small", "medium", "large", "xl", "elder"] as FontPreset[]).map((preset) => (
+            <Chip
+              key={preset}
+              active={settings.fontPreset === preset}
+              onClick={() => void update({ fontPreset: preset, ...FONT_PRESETS[preset], tamilFont: preset === "elder" ? "serif" : settings.tamilFont })}
+            >
+              {preset === "elder" ? "Elder" : preset}
+            </Chip>
+          ))}
         </Row>
         <Row label="Size">
           {(["small", "medium", "large", "xl"] as FontPreset[]).map((preset) => (
@@ -219,6 +210,9 @@ export function SettingsPage() {
             </Chip>
           ))}
         </Row>
+        <Row label="Kids Tanglish promise">
+          <Toggle value={settings.showKidsPromise} onChange={(value) => void update({ showKidsPromise: value })} />
+        </Row>
         <Row label="Auto-next chapter">
           <Toggle
             value={settings.ttsAutoNextChapter}
@@ -226,9 +220,92 @@ export function SettingsPage() {
           />
         </Row>
         <div className="p-4">
+          <p className="mb-2 text-sm font-medium">This Sunday passage</p>
+          <div className="grid gap-2">
+            <select
+              className="min-h-11 rounded-2xl border border-navy/10 bg-transparent px-3 dark:border-white/10"
+              value={settings.sundayPin?.bookId ?? "john"}
+              onChange={(event) =>
+                void update({
+                  sundayPin: {
+                    bookId: event.target.value,
+                    chapter: settings.sundayPin?.chapter ?? 3,
+                    verse: settings.sundayPin?.verse ?? 16,
+                    label: settings.sundayPin?.label ?? "This Sunday",
+                  },
+                })
+              }
+            >
+              {BOOK_CATALOG.map((book) => (
+                <option key={book.id} value={book.id}>
+                  {book.nameEnglish}
+                </option>
+              ))}
+            </select>
+            <div className="flex gap-2">
+              <input
+                type="number"
+                min={1}
+                className="min-h-11 w-24 rounded-2xl border border-navy/10 bg-transparent px-3 dark:border-white/10"
+                value={settings.sundayPin?.chapter ?? 3}
+                onChange={(event) =>
+                  void update({
+                    sundayPin: {
+                      bookId: settings.sundayPin?.bookId ?? "john",
+                      chapter: Number(event.target.value) || 1,
+                      verse: settings.sundayPin?.verse,
+                      label: "This Sunday",
+                    },
+                  })
+                }
+                aria-label="Sunday chapter"
+              />
+              <input
+                type="number"
+                min={1}
+                className="min-h-11 w-24 rounded-2xl border border-navy/10 bg-transparent px-3 dark:border-white/10"
+                value={settings.sundayPin?.verse ?? 16}
+                onChange={(event) =>
+                  void update({
+                    sundayPin: {
+                      bookId: settings.sundayPin?.bookId ?? "john",
+                      chapter: settings.sundayPin?.chapter ?? 3,
+                      verse: Number(event.target.value) || undefined,
+                      label: "This Sunday",
+                    },
+                  })
+                }
+                aria-label="Sunday verse"
+              />
+            </div>
+          </div>
+        </div>
+        <div className="p-4">
           <Button variant="secondary" onClick={() => void clearHistory().then(() => push("History cleared", "success"))}>
             Clear reading history
           </Button>
+        </div>
+      </SettingsSection>
+
+      <SettingsSection title="Data health">
+        <div className="grid gap-2 p-4 text-sm">
+          {health ? (
+            <>
+              {health.translations.map((item) => (
+                <p key={item.id} className={item.ready ? "" : "text-muted"}>
+                  {item.name}: {item.ready ? `${item.verses.toLocaleString()} verses` : "not ready"}
+                </p>
+              ))}
+              <p>Strong’s: {health.strongsReady ? "ready" : "missing"}</p>
+              <p>Brief commentary: {health.commentaryBrief ? "ready" : "missing"}</p>
+              <p>Full commentary: {health.commentaryFull ? "ready" : "missing"}</p>
+              <p className="text-muted">
+                Bookmarks {health.bookmarks} · Notes {health.notes} · Sermons {health.sermons}
+              </p>
+            </>
+          ) : (
+            <p className="text-muted">Checking offline data…</p>
+          )}
         </div>
       </SettingsSection>
 

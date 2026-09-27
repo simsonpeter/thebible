@@ -31,6 +31,8 @@ export interface VerseImageOptions {
   offsetX?: number;
   /** Extra vertical shift as % of canvas height (−40 … 40). */
   offsetY?: number;
+  /** Output size preset. */
+  aspect?: "story" | "square" | "portrait";
   width?: number;
   height?: number;
   /** Small label above the reference, e.g. "Promise of the day". */
@@ -276,8 +278,9 @@ function wrapText(ctx: CanvasRenderingContext2D, text: string, maxWidth: number)
 
 export async function renderVerseImage(options: VerseImageOptions): Promise<HTMLCanvasElement> {
   await document.fonts.ready;
-  const width = options.width ?? 1080;
-  const height = options.height ?? 1350;
+  const aspect = options.aspect ?? "portrait";
+  const width = options.width ?? (aspect === "square" ? 1080 : 1080);
+  const height = options.height ?? (aspect === "square" ? 1080 : aspect === "story" ? 1920 : 1350);
   const canvas = document.createElement("canvas");
   canvas.width = width;
   canvas.height = height;

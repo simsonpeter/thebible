@@ -12,6 +12,7 @@ export function AppShell() {
       className={cn(
         "min-h-screen bg-paper text-ink dark:bg-[#090c10] dark:text-paper",
         settings.highContrast && "high-contrast",
+        settings.liturgyMode && "liturgy-mode dark",
       )}
       style={{
         ["--tamil-size" as string]: `${settings.tamilFontSize}px`,

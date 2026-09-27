@@ -11,9 +11,11 @@ import { useToast } from "@/hooks/useToast";
 import { listRecentHistory } from "@/services/historyService";
 import { listPlans, planProgress } from "@/services/planService";
 import { getDailyVersePair } from "@/services/dailyVerse";
+import { getReadingStreak, listFinishedBooks } from "@/services/streakService";
 import { formatReference } from "@/utils/reference";
 import { formatVerseShare, shareOrCopy } from "@/services/shareService";
 import { shareVerseImage } from "@/services/verseImage";
+import { getChapterVerses } from "@/services/bibleService";
 import { cn } from "@/utils/misc";
 import { isTamilScript, translationUiLanguage } from "@/config/translations";
 import type { ReadingHistoryRecord } from "@/types/userData";
@@ -22,14 +24,16 @@ import { db } from "@/db";
 
 export function HomePage() {
   const navigate = useNavigate();
-  const { settings } = useSettings();
+  const { settings, update } = useSettings();
   const { canInstall, install } = useInstallPrompt();
   const { push } = useToast();
   const [recent, setRecent] = useState<ReadingHistoryRecord[]>([]);
-  const [planInfo, setPlanInfo] = useState({ name: "Reading Plan", day: 1, total: 365, id: "njc-plan" });
+  const [planInfo, setPlanInfo] = useState({ name: "Reading Plan", day: 1, total: 365, id: "njc-plan", behind: 0 });
   const [dailyTamil, setDailyTamil] = useState<VerseRecord | undefined>();
   const [dailyEnglish, setDailyEnglish] = useState<VerseRecord | undefined>();
+  const [kidsText, setKidsText] = useState("");
   const [sharing, setSharing] = useState(false);
+  const [streak, setStreak] = useState({ current: 0, readToday: false });
   const bookmarkCount = useLiveQuery(() => db.bookmarks.count(), []) ?? 0;
   const noteCount = useLiveQuery(() => db.notes.count(), []) ?? 0;
   const sermonCount = useLiveQuery(() => db.sermons.count(), []) ?? 0;
@@ -38,18 +42,39 @@ export function HomePage() {
 
   useEffect(() => {
     void listRecentHistory(12).then(setRecent);
+    void getReadingStreak().then(setStreak);
     void (async () => {
       const plans = await listPlans();
       const plan = plans.find((item) => item.id === "njc-plan") ?? plans.find((item) => item.id === "bible-1-year") ?? plans[0];
       if (!plan) return;
       const progress = await planProgress(plan.id);
-      setPlanInfo({ name: plan.name, day: progress.currentDay, total: progress.total, id: plan.id });
+      const dayOfYear = Math.min(
+        plan.totalDays,
+        Math.max(1, Math.ceil((Date.now() - new Date(new Date().getFullYear(), 0, 0).getTime()) / 86_400_000)),
+      );
+      const behind = Math.max(0, dayOfYear - progress.currentDay);
+      setPlanInfo({ name: plan.name, day: progress.currentDay, total: progress.total, id: plan.id, behind });
     })();
-    void getDailyVersePair(settings.dailyVerseSalt).then((pair) => {
+    void getDailyVersePair(settings.dailyVerseSalt).then(async (pair) => {
       setDailyEnglish(pair.english);
       setDailyTamil(pair.tamil);
+      if (pair.english && settings.showKidsPromise) {
+        const tanglish = await getChapterVerses("tanglish", pair.english.bookId, pair.english.chapter);
+        const hit = tanglish.find((verse) => verse.number === pair.english!.number);
+        setKidsText(hit && !hit.isPlaceholder ? hit.text : "");
+      } else {
+        setKidsText("");
+      }
     });
-  }, [settings.dailyVerseSalt]);
+    void listFinishedBooks().then((finished) => {
+      const remembered = settings.rememberedFinishedBooks;
+      const fresh = finished.filter((id) => !remembered.includes(id));
+      if (!fresh.length) return;
+      push(`Finished ${fresh[0]!.replace(/-/g, " ")} — well done!`, "success");
+      void update({ rememberedFinishedBooks: [...remembered, ...fresh] });
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- celebrate newly finished books once per load
+  }, [settings.dailyVerseSalt, settings.showKidsPromise]);
 
   const continueBook = recent[0]?.bookId ?? settings.lastBookId;
   const continueChapter = recent[0]?.chapter ?? settings.lastChapter;
@@ -58,6 +83,7 @@ export function HomePage() {
   const recentStrip = recent.slice(1);
   const daily = dailyTamil ?? dailyEnglish;
   const dailyLanguage = dailyTamil ? ("ta" as const) : ("en" as const);
+  const sunday = settings.sundayPin;
 
   async function shareDaily() {
     if (!daily) return;
@@ -112,11 +138,18 @@ export function HomePage() {
     <Page title="NJC Bible App" subtitle="தமிழ் வேதாகமம் • English Bible" showStatus>
       <div className="mb-5 flex items-center justify-between gap-3">
         <OfflineBadge />
-        {canInstall ? (
-          <Button variant="gold" onClick={() => void install()}>
-            Install
-          </Button>
-        ) : null}
+        <div className="flex flex-wrap items-center gap-2">
+          {streak.current > 0 ? (
+            <span className="rounded-full bg-gold-soft/70 px-3 py-1 text-xs font-semibold text-navy-deep">
+              {streak.current}-day streak{streak.readToday ? "" : " · keep going"}
+            </span>
+          ) : null}
+          {canInstall ? (
+            <Button variant="gold" onClick={() => void install()}>
+              Install
+            </Button>
+          ) : null}
+        </div>
       </div>
 
       {!bsiReady ? (
@@ -124,6 +157,38 @@ export function HomePage() {
           Tamil Bible data has not been installed yet. It is bundled as Tamil O.V. and will load on first launch, or you
           can import book JSON files from Settings → Bible Data.
         </p>
+      ) : null}
+
+      {sunday ? (
+        <section className="mb-4 rounded-3xl border border-gold/40 bg-gold-soft/30 p-5 dark:bg-gold/10">
+          <p className="text-xs tracking-[0.25em] text-gold uppercase">{sunday.label || "This Sunday"}</p>
+          <h2 className="mt-2 text-xl font-semibold">
+            {formatReference(sunday.bookId, sunday.chapter, sunday.verse, translationUiLanguage(settings.defaultTranslation))}
+          </h2>
+          <div className="mt-4 flex flex-wrap gap-2">
+            <Button
+              variant="gold"
+              onClick={() =>
+                navigate(
+                  `/bible/${sunday.bookId}/${sunday.chapter}?translation=${settings.defaultTranslation}${sunday.verse ? `&verse=${sunday.verse}` : ""}`,
+                )
+              }
+            >
+              Open passage
+            </Button>
+            <Button
+              variant="secondary"
+              onClick={() =>
+                navigate(`/bible/${sunday.bookId}/${sunday.chapter}?mode=parallel&translation=bsi-ov`)
+              }
+            >
+              3-way teach
+            </Button>
+            <Button variant="ghost" onClick={() => navigate(`/commentary/full/${sunday.bookId}/${sunday.chapter}`)}>
+              Commentary
+            </Button>
+          </div>
+        </section>
       ) : null}
 
       <section className="mb-4 rounded-3xl bg-[#12263A] p-5 text-white dark:bg-[#1d3b5a]">
@@ -156,6 +221,12 @@ export function HomePage() {
               {dailyEnglish.text}
             </p>
           ) : null}
+          {settings.showKidsPromise && kidsText ? (
+            <div className="mt-3 rounded-2xl bg-paper-2 p-3 dark:bg-white/5">
+              <p className="text-xs font-semibold tracking-wide text-gold uppercase">Kids · Tanglish</p>
+              <p className="mt-1 text-sm leading-relaxed">{kidsText}</p>
+            </div>
+          ) : null}
           <div className="mt-4 flex flex-wrap gap-2">
             <Button
               variant="gold"
@@ -175,6 +246,16 @@ export function HomePage() {
             </Button>
           </div>
         </section>
+      ) : null}
+
+      {planInfo.behind > 0 ? (
+        <Card className="mb-4" onClick={() => navigate(`/reading-plans/${planInfo.id}`)}>
+          <p className="text-xs tracking-[0.25em] text-gold uppercase">Catch up</p>
+          <p className="mt-2 font-semibold">
+            You’re about {planInfo.behind} day{planInfo.behind === 1 ? "" : "s"} behind on {planInfo.name}
+          </p>
+          <p className="mt-1 text-sm text-muted">Open the plan and hear today’s chapter.</p>
+        </Card>
       ) : null}
 
       {recentStrip.length > 0 ? (
@@ -212,6 +293,8 @@ export function HomePage() {
           [
             { label: "READ BIBLE", to: "/bible" },
             { label: "SEARCH", to: "/search" },
+            { label: "Topics", subtitle: "Faith · Prayer · Peace", to: "/topics" },
+            { label: "Memory", subtitle: "Practice cards", to: "/memory" },
             { label: "Strong Dictionary", subtitle: "Hebrew/Greek", to: "/dictionary" },
             { label: "Commentary", subtitle: "Brief + full Tamil விரிவுரை", to: "/commentary" },
             { label: `BOOKMARKS (${bookmarkCount})`, to: "/bookmarks" },
@@ -219,6 +302,7 @@ export function HomePage() {
             { label: `NOTES (${noteCount})`, to: "/notes" },
             { label: `SERMONS (${sermonCount})`, to: "/sermons" },
             { label: "READING PLANS", to: "/reading-plans" },
+            { label: "PROGRESS", to: "/progress" },
           ] as Array<{ label: string; to: string; subtitle?: string }>
         ).map((item) => (
           <Card key={item.to} onClick={() => navigate(item.to)}>
@@ -227,14 +311,6 @@ export function HomePage() {
           </Card>
         ))}
       </div>
-
-      <Card className="mb-4" onClick={() => navigate("/notes")}>
-        <p className="text-xs tracking-[0.25em] text-gold uppercase">Notes</p>
-        <h2 className="mt-2 font-semibold">Your personal notes</h2>
-        <p className="mt-1 text-sm text-muted">
-          {noteCount ? `${noteCount} note${noteCount === 1 ? "" : "s"} on this phone` : "Verse notes you write while reading."}
-        </p>
-      </Card>
     </Page>
   );
 }

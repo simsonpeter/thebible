@@ -21,10 +21,14 @@ import { PrivacyPage } from "@/pages/PrivacyPage";
 import { AccountPage } from "@/pages/AccountPage";
 import { DictionaryPage } from "@/pages/DictionaryPage";
 import { CommentaryPage } from "@/pages/CommentaryPage";
+import { TopicsPage } from "@/pages/TopicsPage";
+import { TopicDetailPage } from "@/pages/TopicDetailPage";
+import { MemoryPage } from "@/pages/MemoryPage";
 import { SettingsProvider } from "@/hooks/useSettings";
 import { ToastProvider } from "@/hooks/useToast";
 import { AuthProvider } from "@/hooks/useAuth";
 import { SplashScreen } from "@/components/SplashScreen";
+import { OnboardingOverlay } from "@/components/OnboardingOverlay";
 import { useBibleInit } from "@/hooks/useBibleInit";
 
 export function App() {
@@ -43,6 +47,7 @@ export function App() {
       <ToastProvider>
         <AuthProvider>
         <BrowserRouter basename={import.meta.env.BASE_URL.replace(/\/$/, "") || "/"}>
+          <OnboardingOverlay />
           <Routes>
             <Route element={<AppShell />}>
               <Route path="/" element={<HomePage />} />
@@ -51,6 +56,9 @@ export function App() {
               <Route path="/bible/:book/:chapter" element={<BiblePage />} />
               <Route path="/search" element={<SearchPage />} />
               <Route path="/dictionary" element={<DictionaryPage />} />
+              <Route path="/topics" element={<TopicsPage />} />
+              <Route path="/topics/:topicId" element={<TopicDetailPage />} />
+              <Route path="/memory" element={<MemoryPage />} />
               <Route path="/commentary" element={<CommentaryPage />} />
               <Route path="/commentary/:edition" element={<CommentaryPage />} />
               <Route path="/commentary/:edition/:book" element={<CommentaryPage />} />

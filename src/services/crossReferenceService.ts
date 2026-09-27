@@ -17,3 +17,15 @@ export function crossRefPath(target: CrossRefTarget, translationId?: string): st
   if (translationId) params.set("translation", translationId);
   return `/bible/${target.bookId}/${target.chapter}?${params.toString()}`;
 }
+
+/** Follow the cross-ref trail, skipping verses already visited in this chain. */
+export function getNextCrossReference(
+  bookId: string,
+  chapter: number,
+  verse: number,
+  visited: string[] = [],
+): CrossRefTarget | null {
+  const refs = getCrossReferences(bookId, chapter, verse);
+  const next = refs.find((item) => !visited.includes(`${item.bookId}:${item.chapter}:${item.verse}`));
+  return next ?? null;
+}

@@ -49,6 +49,26 @@ body {
   color: #f5f1ea;
 }
 
+/* Night liturgy: gold-on-navy evening reading */
+.liturgy-mode {
+  --color-paper: #0b1a2b;
+  --color-paper-2: #12263a;
+  --color-ink: #f7f3eb;
+  --color-muted: #e8d5a3;
+  background: #0b1a2b;
+  color: #f7f3eb;
+}
+
+.liturgy-mode .bg-paper,
+.liturgy-mode .bg-white\/80,
+.liturgy-mode .dark\:bg-white\/5 {
+  background-color: rgba(18, 38, 58, 0.92) !important;
+}
+
+.liturgy-mode .text-muted {
+  color: #e8d5a3 !important;
+}
+
 .tamil,
 .tamil-serif {
   font-kerning: normal;
