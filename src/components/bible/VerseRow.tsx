@@ -1,3 +1,4 @@
+import type { TouchEvent } from "react";
 import type { HighlightColor } from "@/types/userData";
 import type { VerseRecord } from "@/types/bible";
 import { cn } from "@/utils/misc";
@@ -10,6 +11,17 @@ const highlightClass: Record<HighlightColor, string> = {
   orange: "bg-orange-200/80 dark:bg-orange-400/20",
 };
 
+/** Split Scripture into tappable words while keeping punctuation. */
+export function tokenizeVerseText(text: string): Array<{ kind: "word" | "gap"; value: string }> {
+  const parts = text.split(/([\p{L}\p{M}\p{N}’']+)/u);
+  return parts
+    .filter((part) => part.length > 0)
+    .map((part) => ({
+      kind: /^[\p{L}\p{M}\p{N}’']+$/u.test(part) ? ("word" as const) : ("gap" as const),
+      value: part,
+    }));
+}
+
 export function VerseRow({
   verse,
   showNumber,
@@ -21,6 +33,7 @@ export function VerseRow({
   serif,
   onActivate,
   onLongPress,
+  onWordLongPress,
 }: {
   verse: VerseRecord;
   showNumber: boolean;
@@ -32,7 +45,20 @@ export function VerseRow({
   serif?: boolean;
   onActivate: () => void;
   onLongPress: () => void;
+  onWordLongPress?: (word: string) => void;
 }) {
+  const tokens = tokenizeVerseText(verse.text);
+
+  function armLongPress(action: () => void) {
+    return (event: TouchEvent<HTMLElement>) => {
+      const target = event.currentTarget;
+      const timer = window.setTimeout(action, 480);
+      const cancel = () => window.clearTimeout(timer);
+      target.addEventListener("touchend", cancel, { once: true });
+      target.addEventListener("touchmove", cancel, { once: true });
+    };
+  }
+
   return (
     <p
       id={`v-${verse.number}`}
@@ -56,18 +82,37 @@ export function VerseRow({
         event.preventDefault();
         onLongPress();
       }}
-      onTouchStart={(event) => {
-        const target = event.currentTarget;
-        const timer = window.setTimeout(onLongPress, 500);
-        const cancel = () => window.clearTimeout(timer);
-        target.addEventListener("touchend", cancel, { once: true });
-        target.addEventListener("touchmove", cancel, { once: true });
-      }}
+      onTouchStart={armLongPress(onLongPress)}
     >
       {showNumber ? (
         <sup className="mr-1 select-none text-xs font-semibold text-gold">{verse.number}</sup>
       ) : null}
-      <span className={verse.isPlaceholder ? "italic text-muted dark:text-white/50" : ""}>{verse.text}</span>
+      {verse.isPlaceholder ? (
+        <span className="italic text-muted dark:text-white/50">{verse.text}</span>
+      ) : (
+        tokens.map((token, index) =>
+          token.kind === "word" && onWordLongPress ? (
+            <span
+              key={`${verse.id}-${index}`}
+              className="rounded-sm hover:bg-gold/20"
+              onContextMenu={(event) => {
+                event.preventDefault();
+                event.stopPropagation();
+                onWordLongPress(token.value);
+              }}
+              onTouchStart={(event) => {
+                event.stopPropagation();
+                armLongPress(() => onWordLongPress(token.value))(event);
+              }}
+              onClick={(event) => event.stopPropagation()}
+            >
+              {token.value}
+            </span>
+          ) : (
+            <span key={`${verse.id}-${index}`}>{token.value}</span>
+          ),
+        )
+      )}
     </p>
   );
 }

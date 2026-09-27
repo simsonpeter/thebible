@@ -36,6 +36,8 @@ export interface AppSettings {
   dailyVerseSalt: number;
   uiLanguage: "en" | "ta";
   highContrast: boolean;
+  /** Last opened commentary route, e.g. `/commentary/full/john/3`. */
+  lastCommentaryPath: string;
 }
 
 export const FONT_PRESETS: Record<
@@ -53,7 +55,7 @@ export const DEFAULT_SETTINGS: AppSettings = {
   defaultTranslation: "kjv",
   readingMode: "single",
   parallelOrder: "tamil-first",
-  parallelTranslations: ["bsi-ov", "kjv"],
+  parallelTranslations: ["bsi-ov", "tanglish", "kjv"],
   showVerseNumbers: true,
   fontPreset: "medium",
   tamilFontSize: 19,
@@ -76,4 +78,5 @@ export const DEFAULT_SETTINGS: AppSettings = {
   dailyVerseSalt: 0,
   uiLanguage: "en",
   highContrast: false,
+  lastCommentaryPath: "",
 };

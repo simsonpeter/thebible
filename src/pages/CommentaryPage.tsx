@@ -19,6 +19,7 @@ import {
   searchCommentaryBooks,
 } from "@/services/commentaryService";
 import type { CommentaryBook, CommentaryEditionId } from "@/types/commentary";
+import { useSettings } from "@/hooks/useSettings";
 
 export function CommentaryPage() {
   const params = useParams<{ edition?: string; book?: string; chapter?: string }>();
@@ -49,11 +50,21 @@ export function CommentaryPage() {
 
 function CommentaryHub() {
   const navigate = useNavigate();
+  const { settings } = useSettings();
+  const resumePath = settings.lastCommentaryPath;
+
   return (
     <Page title="Commentary" subtitle="வேதாகமம் விரிவுரை" back>
       <p className="text-sm text-muted">
         Good News Tamil commentary scans. Study aids, not Scripture, and not BSI publications.
       </p>
+      {resumePath ? (
+        <Card className="mt-4" onClick={() => navigate(resumePath)}>
+          <p className="text-xs tracking-[0.25em] text-gold uppercase">Resume</p>
+          <p className="mt-2 font-semibold">Continue last commentary page</p>
+          <p className="mt-1 text-xs text-muted">{resumePath.replace("/commentary/", "")}</p>
+        </Card>
+      ) : null}
       <div className="mt-5 grid gap-3">
         <Card onClick={() => navigate("/commentary/brief")}>
           <p className="font-semibold">{COMMENTARY_EDITIONS.brief.title}</p>
@@ -145,11 +156,16 @@ function EditionBookList({ edition }: { edition: CommentaryEditionId }) {
 
 function BriefBookView({ bookId }: { bookId: string }) {
   const navigate = useNavigate();
+  const { update } = useSettings();
   const { books, ready, error } = useCommentaryBooks("brief");
   const selected = books.find((book) => book.id === bookId);
   const catalog = getBookById(bookId);
   const previous = adjacentCommentaryBook(books, bookId, -1);
   const next = adjacentCommentaryBook(books, bookId, 1);
+
+  useEffect(() => {
+    void update({ lastCommentaryPath: `/commentary/brief/${bookId}` });
+  }, [bookId, update]);
 
   return (
     <Page
@@ -242,12 +258,17 @@ function FullBookChapters({ bookId }: { bookId: string }) {
 
 function FullChapterView({ bookId, chapterId }: { bookId: string; chapterId: string }) {
   const navigate = useNavigate();
+  const { update } = useSettings();
   const { books, ready, error } = useCommentaryBooks("full");
   const selected = books.find((book) => book.id === bookId);
   const chapter = getCommentaryChapter(selected, chapterId);
   const catalog = getBookById(bookId);
   const previous = adjacentCommentaryChapter(selected, chapterId, -1);
   const next = adjacentCommentaryChapter(selected, chapterId, 1);
+
+  useEffect(() => {
+    void update({ lastCommentaryPath: `/commentary/full/${bookId}/${chapterId}` });
+  }, [bookId, chapterId, update]);
 
   return (
     <Page

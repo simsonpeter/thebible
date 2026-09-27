@@ -22,3 +22,7 @@ export async function listRecentSearches(limit = 8): Promise<string[]> {
   const rows = await db.recentSearches.orderBy("createdAt").reverse().limit(limit * 2).toArray();
   return [...new Set(rows.map((row) => row.query))].slice(0, limit);
 }
+
+export async function clearRecentSearches(): Promise<void> {
+  await db.recentSearches.clear();
+}

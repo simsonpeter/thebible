@@ -70,6 +70,7 @@ describe("parallel translations", () => {
       "thngv",
       "tanglish",
     ]);
+    expect(orderParallelTranslations(["bsi-ov", "tanglish", "kjv"])).toEqual(["bsi-ov", "tanglish", "kjv"]);
   });
 
   it("groups Bibles by language", () => {

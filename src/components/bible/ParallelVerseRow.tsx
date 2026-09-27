@@ -50,17 +50,18 @@ export function ParallelVerseRow({
         {translationIds.map((id) => {
           const verse = byId[id];
           const tamil = isTamilScript(id);
+          const tanglish = id === "tanglish";
           return (
             <div key={id}>
               <p className="mb-1 text-[11px] font-semibold tracking-wide text-muted uppercase">{translationLabel(id)}</p>
               <p
                 className={cn(
                   "verse-text",
-                  tamil ? "tamil" : "english-serif",
+                  tamil ? "tamil" : tanglish ? "" : "english-serif",
                   verse?.isPlaceholder && "italic text-muted",
                 )}
                 style={{
-                  fontSize: tamil ? "var(--tamil-size)" : "var(--english-size)",
+                  fontSize: tamil || tanglish ? "var(--tamil-size)" : "var(--english-size)",
                   lineHeight: "var(--verse-leading)",
                 }}
               >

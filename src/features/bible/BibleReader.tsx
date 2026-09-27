@@ -10,14 +10,17 @@ import { ModeToggle, TranslationLanguagePicker, TranslationSelector } from "@/co
 import { ParallelVerseRow } from "@/components/bible/ParallelVerseRow";
 import { VerseContextMenu } from "@/components/bible/VerseContextMenu";
 import { VerseRow } from "@/components/bible/VerseRow";
+import { WordStudySheet } from "@/components/bible/WordStudySheet";
 import { Button } from "@/components/ui/Button";
 import { Modal } from "@/components/ui/Modal";
+import { BottomSheet } from "@/components/ui/BottomSheet";
 import { db } from "@/db";
 import { useSettings } from "@/hooks/useSettings";
 import { useToast } from "@/hooks/useToast";
 import { useWakeLock } from "@/hooks/useWakeLock";
 import { SLEEP_TIMER_OPTIONS, useBibleAudio } from "@/hooks/useBibleAudio";
 import { isTamilScript, toggleParallelTranslation, translationUiLanguage } from "@/config/translations";
+import { crossRefPath, formatCrossRef, getCrossReferences } from "@/services/crossReferenceService";
 import {
   adjacentChapter,
   getChapterVerses,
@@ -89,6 +92,8 @@ export function BibleReader() {
   const [copyOpen, setCopyOpen] = useState(false);
   const [sleepMinutes, setSleepMinutes] = useState(0);
   const [sleepEndsAt, setSleepEndsAt] = useState<number | null>(null);
+  const [wordStudy, setWordStudy] = useState<string | null>(null);
+  const [crossRefsOpen, setCrossRefsOpen] = useState(false);
 
   useWakeLock(settings.wakeLock);
 
@@ -547,9 +552,21 @@ export function BibleReader() {
     if (action === "note") setNoteOpen(true);
     if (action === "sermon") setSermonOpen(true);
     if (action === "compare") changeMode("parallel");
+    if (action === "crossrefs") {
+      setCrossRefsOpen(true);
+      setMenuOpen(false);
+      return;
+    }
     if (action === "search") navigate(`/search?q=${encodeURIComponent(text.slice(0, 40))}`);
-    if (action === "strongs") navigate("/dictionary");
-    if (action === "commentary") navigate(`/commentary/full/${bookId}/${chapter}`);
+    if (action === "strongs") {
+      const firstWord = text.trim().split(/\s+/)[0] ?? "";
+      navigate(firstWord ? `/dictionary?q=${encodeURIComponent(firstWord)}` : "/dictionary");
+    }
+    if (action === "commentary") {
+      const path = `/commentary/full/${bookId}/${chapter}`;
+      void update({ lastCommentaryPath: path });
+      navigate(path);
+    }
     if (action === "image") {
       navigate("/verse-image", {
         state: { bookId, chapter, verse: range.start, text, language: verseLanguage, translationId },
@@ -570,6 +587,21 @@ export function BibleReader() {
         .filter((group) => group.length > 0);
     }
     return selectedSingleVerses.length ? [selectedSingleVerses] : [];
+  }
+
+  const selectedCrossRefs = useMemo(() => {
+    if (!range) return [];
+    return getCrossReferences(bookId, chapter, range.start);
+  }, [range, bookId, chapter]);
+
+  function enableTeachingParallel() {
+    void update({
+      readingMode: "parallel",
+      parallelOrder: "tamil-first",
+      parallelTranslations: ["bsi-ov", "tanglish", "kjv"],
+    });
+    changeMode("parallel");
+    push("Teaching view: Tamil · Tanglish · KJV", "success");
   }
 
   async function addVersesToSermon(sermonId: number) {
@@ -625,13 +657,22 @@ export function BibleReader() {
           </div>
           <div className="flex flex-wrap items-center gap-1.5">
             {mode === "parallel" ? (
-              <div className="w-full">
-                <TranslationLanguagePicker
-                  compact
-                  selected={settings.parallelTranslations}
-                  onSelect={toggleCompare}
-                  order={settings.parallelOrder}
-                />
+              <div className="flex w-full flex-wrap items-center gap-1.5">
+                <div className="min-w-0 flex-1">
+                  <TranslationLanguagePicker
+                    compact
+                    selected={settings.parallelTranslations}
+                    onSelect={toggleCompare}
+                    order={settings.parallelOrder}
+                  />
+                </div>
+                <button
+                  type="button"
+                  className="min-h-9 rounded-full bg-gold-soft/70 px-3 text-xs font-semibold text-navy-deep"
+                  onClick={enableTeachingParallel}
+                >
+                  3-way
+                </button>
               </div>
             ) : (
               <TranslationSelector value={translationId} onChange={changeTranslation} />
@@ -747,6 +788,10 @@ export function BibleReader() {
                 serif={language === "ta" ? settings.tamilFont === "serif" : settings.englishFont === "serif"}
                 onActivate={() => selectVerse(verse.number)}
                 onLongPress={() => openMenu(verse.number)}
+                onWordLongPress={(word) => {
+                  setSelection({ start: verse.number, end: verse.number });
+                  setWordStudy(word);
+                }}
               />
             ))
           : pairs.map((pair) => (
@@ -824,6 +869,48 @@ export function BibleReader() {
         onAction={(action) => void handleAction(action)}
         onHighlight={(color) => void onHighlight(color)}
       />
+      <WordStudySheet
+        open={Boolean(wordStudy)}
+        word={wordStudy ?? ""}
+        onClose={() => setWordStudy(null)}
+        onSearchTamil={(word) => {
+          setWordStudy(null);
+          navigate(`/search?q=${encodeURIComponent(word)}&lang=ta`);
+        }}
+        onSearchEnglish={(word) => {
+          setWordStudy(null);
+          navigate(`/search?q=${encodeURIComponent(word)}&lang=en`);
+        }}
+        onOpenDictionary={(word) => {
+          setWordStudy(null);
+          navigate(`/dictionary?q=${encodeURIComponent(word)}`);
+        }}
+      />
+      <BottomSheet
+        open={crossRefsOpen}
+        title={range ? `${selectionReference()} · Cross-refs` : "Cross-refs"}
+        onClose={() => setCrossRefsOpen(false)}
+      >
+        {selectedCrossRefs.length === 0 ? (
+          <p className="text-sm text-muted">No offline cross-references for this verse yet.</p>
+        ) : (
+          <div className="grid gap-2">
+            {selectedCrossRefs.map((target) => (
+              <button
+                key={`${target.bookId}-${target.chapter}-${target.verse}`}
+                type="button"
+                className="min-h-12 rounded-2xl bg-paper-2 px-3 text-left text-sm font-semibold dark:bg-white/5"
+                onClick={() => {
+                  setCrossRefsOpen(false);
+                  navigate(crossRefPath(target, translationId));
+                }}
+              >
+                <span className={language === "ta" ? "tamil" : undefined}>{formatCrossRef(target, language)}</span>
+              </button>
+            ))}
+          </div>
+        )}
+      </BottomSheet>
       <BibleNavigator open={goOpen} onClose={() => setGoOpen(false)} />
       <Modal open={noteOpen} title="Add note" onClose={() => setNoteOpen(false)}>
         <textarea

@@ -10,6 +10,7 @@ const actions = [
   { id: "note", label: "Add Note" },
   { id: "sermon", label: "Add to sermon" },
   { id: "compare", label: "Compare" },
+  { id: "crossrefs", label: "Cross-refs" },
   { id: "search", label: "Search" },
   { id: "strongs", label: "Strong Dictionary" },
   { id: "commentary", label: "Commentary" },

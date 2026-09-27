@@ -156,6 +156,19 @@ export function SettingsPage() {
               }}
               order={settings.parallelOrder}
             />
+            <Button
+              variant="secondary"
+              className="mt-3"
+              onClick={() =>
+                void update({
+                  readingMode: "parallel",
+                  parallelOrder: "tamil-first",
+                  parallelTranslations: ["bsi-ov", "tanglish", "kjv"],
+                }).then(() => push("Teaching 3-way: Tamil · Tanglish · KJV", "success"))
+              }
+            >
+              Teaching 3-way (Tamil + Tanglish + KJV)
+            </Button>
           </div>
           <div className="flex flex-wrap items-center justify-between gap-3">
             <p className="text-sm font-medium">Parallel order</p>
