@@ -4,10 +4,12 @@ export function SearchBar({
   value,
   onChange,
   placeholder,
+  onSubmit,
 }: {
   value: string;
   onChange: (value: string) => void;
   placeholder: string;
+  onSubmit?: () => void;
 }) {
   return (
     <label className="block">
@@ -15,6 +17,12 @@ export function SearchBar({
       <input
         value={value}
         onChange={(event) => onChange(event.target.value)}
+        onKeyDown={(event) => {
+          if (event.key === "Enter") {
+            event.preventDefault();
+            onSubmit?.();
+          }
+        }}
         placeholder={placeholder}
         aria-label={placeholder}
         className={cn(

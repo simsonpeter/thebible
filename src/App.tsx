@@ -57,6 +57,7 @@ export function App() {
               <Route path="/search" element={<SearchPage />} />
               <Route path="/dictionary" element={<DictionaryPage />} />
               <Route path="/topics" element={<TopicsPage />} />
+              <Route path="/topics/study" element={<TopicDetailPage />} />
               <Route path="/topics/:topicId" element={<TopicDetailPage />} />
               <Route path="/memory" element={<MemoryPage />} />
               <Route path="/commentary" element={<CommentaryPage />} />
