@@ -21,6 +21,7 @@ import { PrivacyPage } from "@/pages/PrivacyPage";
 import { AccountPage } from "@/pages/AccountPage";
 import { DictionaryPage } from "@/pages/DictionaryPage";
 import { CommentaryPage } from "@/pages/CommentaryPage";
+import { InterlinearPage } from "@/pages/InterlinearPage";
 import { TopicsPage } from "@/pages/TopicsPage";
 import { TopicDetailPage } from "@/pages/TopicDetailPage";
 import { MemoryPage } from "@/pages/MemoryPage";
@@ -56,6 +57,7 @@ export function App() {
               <Route path="/bible/:book/:chapter" element={<BiblePage />} />
               <Route path="/search" element={<SearchPage />} />
               <Route path="/dictionary" element={<DictionaryPage />} />
+              <Route path="/interlinear" element={<InterlinearPage />} />
               <Route path="/topics" element={<TopicsPage />} />
               <Route path="/topics/study" element={<TopicDetailPage />} />
               <Route path="/topics/:topicId" element={<TopicDetailPage />} />

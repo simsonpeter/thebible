@@ -13,6 +13,7 @@ const actions = [
   { id: "crossrefs", label: "Cross-refs" },
   { id: "search", label: "Search" },
   { id: "strongs", label: "Strong Dictionary" },
+  { id: "interlinear", label: "Interlinear (Emunah)" },
   { id: "commentary", label: "Commentary" },
   { id: "image", label: "Verse Image" },
 ] as const;

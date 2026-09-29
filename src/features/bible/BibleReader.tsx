@@ -36,6 +36,7 @@ import { recordChapterOpen } from "@/services/historyService";
 import { addNote } from "@/services/noteService";
 import { addSermonPassageRange, createSermon, readActiveSermonId, rememberActiveSermon } from "@/services/sermonService";
 import { markChapterRead } from "@/services/progressService";
+import { emunahInterlinearUrl, openEmunahAvodah } from "@/services/emunahAvodahService";
 import {
   COPY_FORMAT_OPTIONS,
   copyText,
@@ -594,6 +595,11 @@ export function BibleReader() {
       const path = `/commentary/full/${bookId}/${chapter}`;
       void update({ lastCommentaryPath: path });
       navigate(path);
+    }
+    if (action === "interlinear") {
+      const url = emunahInterlinearUrl(bookId, chapter);
+      if (url) openEmunahAvodah(url);
+      else navigate("/interlinear");
     }
     if (action === "image") {
       navigate("/verse-image", {

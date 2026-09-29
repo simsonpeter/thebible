@@ -52,6 +52,12 @@
       "name": "Good News Tamil Bible Commentary",
       "license": "Public domain per Matthew 10:8. MIT covers the source repository packaging.",
       "source": "https://github.com/yesudas/good-news-tamil-bible-commentary"
+    },
+    {
+      "id": "emunah-avodah",
+      "name": "Emunah Avodah Interlinear Bible",
+      "license": "External website. Easter Tech / Emunah Avodah intellectual property.",
+      "source": "https://www.emunahavodah.com/"
     }
   ]
 }

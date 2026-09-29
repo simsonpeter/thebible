@@ -17,6 +17,7 @@ export function MorePage() {
     { to: "/topics", label: "Topics", subtitle: "Faith · Prayer · Peace" },
     { to: "/memory", label: "Memory verses", subtitle: "Practice from Memory folder" },
     { to: "/dictionary", label: "Strong Dictionary", subtitle: "Hebrew/Greek" },
+    { to: "/interlinear", label: "Interlinear Bible", subtitle: "Emunah Avodah · Hebrew/Greek/Tamil" },
     { to: "/commentary", label: "Commentary", subtitle: "Brief + full Tamil விரிவுரை" },
     { to: "/progress", label: "Bible progress" },
     { to: "/verse-image", label: "Verse image" },

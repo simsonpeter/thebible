@@ -89,6 +89,15 @@ export const LICENSES = {
     source: "https://github.com/yesudas/good-news-tamil-bible-commentary",
     year: 2025,
   },
+  emunahAvodah: {
+    name: "Emunah Avodah Interlinear Bible",
+    abbreviation: "Hebrew · Greek · Tamil",
+    license: "External website. Easter Tech / Emunah Avodah intellectual property.",
+    licenseDetails:
+      "Quadrilingual interlinear Scripture (Hebrew OT, Greek NT, English, Tamil), Parashah, and related study tools at https://www.emunahavodah.com/, operated by Emunah Avodah Scripture Tools & Edification Research Tech (Easter Tech). That content is not bundled, scraped, or mirrored in NJC Bible App. The app only links you to their site (including chapter deep links where available). Use is subject to their terms and privacy policy; registration may be required. This is a study aid, not Scripture, and is not a BSI publication.",
+    source: "https://www.emunahavodah.com/",
+    year: 2026,
+  },
 };
 
 export const DEMO_PLACEHOLDER = "[Licensed Bible text required]";

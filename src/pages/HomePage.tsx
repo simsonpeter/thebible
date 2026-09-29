@@ -298,6 +298,7 @@ export function HomePage() {
             { label: "Topics", subtitle: "Faith · Prayer · Peace", to: "/topics" },
             { label: "Memory", subtitle: "Practice cards", to: "/memory" },
             { label: "Strong Dictionary", subtitle: "Hebrew/Greek", to: "/dictionary" },
+            { label: "Interlinear", subtitle: "Emunah Avodah", to: "/interlinear" },
             { label: "Commentary", subtitle: "Brief + full Tamil விரிவுரை", to: "/commentary" },
             { label: `BOOKMARKS (${bookmarkCount})`, to: "/bookmarks" },
             { label: `HIGHLIGHTS (${highlightCount})`, to: "/highlights" },
